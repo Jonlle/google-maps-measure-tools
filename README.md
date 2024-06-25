@@ -1,18 +1,30 @@
-# Google Maps Measurement Tool
+# React + TypeScript + Vite
 
-Una aplicación web interactiva que permite a los usuarios medir áreas y radios en en un mapa interactivo utilizando la API de Google Maps. Desarrollada con React y TypeScript, esta herramienta ofrece una interfaz intuitiva para realizar mediciones geográficas de manera rápida y precisa.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Características principales:
+Currently, two official plugins are available:
 
-- **Medición de Área**: Dibuja polígonos en el mapa y calcula el área dentro de ellos.
-- **Medición de Radio**: Dibuja círculos en el mapa y mide el radio.
-- **Interfaz Intuitiva**: Interfaz de usuario simple y fácil de usar con botones para seleccionar el modo de medición.
-- **Responsivo**: Diseño responsivo que se adapta a diferentes tamaños de pantalla, incluyendo dispositivos móviles.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Tecnologías utilizadas:
+## Expanding the ESLint configuration
 
-- **React**: Biblioteca de JavaScript para construir interfaces de usuario.
-- **TypeScript**: Lenguaje de programación que añade tipos estáticos a JavaScript.
-- **@react-google-maps/api**: Biblioteca que facilita la integración de Google Maps con aplicaciones React.
-- **Vite**: Herramienta de desarrollo rápido para proyectos web modernos.
-- **CSS**: Estilos personalizados para una mejor apariencia y experiencia de usuario.
+If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+
+- Configure the top-level `parserOptions` property like this:
+
+```js
+export default {
+  // other rules...
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+    project: ['./tsconfig.json', './tsconfig.node.json'],
+    tsconfigRootDir: __dirname,
+  },
+}
+```
+
+- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
+- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
+- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
