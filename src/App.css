@@ -8,32 +8,7 @@
 }
 
 .map-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.button-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
-  width: 100%;
-  max-width: 800px;
-}
-
-.map-button {
-  flex: 1;
-  margin: 0 0.5rem;
-  min-width: 120px;
-  max-width: 200px;
-}
-
-.google-map-container {
-  width: 100%;
-  max-width: 800px;
-  height: 60vh;
-  margin: 0 auto;
+  padding: 1rem;
 }
 
 .result-container {
@@ -44,39 +19,52 @@
   border-radius: 8px;
   color: #213547;
   width: 100%;
-  max-width: 800px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .result-container p {
-  margin: 0; 
+  margin: 0;
 }
 
-@media (max-width: 768px) {
+
+.button-container {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.map-button {
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-right: 5px;
+  cursor: pointer;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.15s ease;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.map-button:hover {
+  background-color: #45a049;
+}
+
+@media (min-width: 425px) {
   .button-container {
-    flex-direction: column;
+    justify-content: flex-start;
   }
 
   .map-button {
-    margin: 0.5rem 0;
-    width: 100%;
-    max-width: none;
-  }
-
-  .google-map-container {
-    height: 50vh;
+    width: auto;
+    margin-right: 10px; /* Mayor espacio entre botones en pantallas grandes */
   }
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .map-button {
-    min-width: 150px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .result-container {
-    background-color: #2a2a2a;
-    color: rgba(255, 255, 255, 0.87);
-  }
-}
