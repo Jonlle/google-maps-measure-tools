@@ -12,9 +12,9 @@
 }
 
 .result-container {
-  height: 56px;
+  min-height: 64px;
   margin-top: 1rem;
-  padding: 1rem;
+  padding: 0.5rem;
   background-color: #f0f0f0;
   border-radius: 8px;
   color: #213547;
@@ -26,7 +26,6 @@
 .result-container p {
   margin: 0;
 }
-
 
 .button-container {
   display: flex;
@@ -52,6 +51,9 @@
   width: 100%;
   margin-bottom: 10px;
 }
+.map-button:last-child {
+  margin-bottom: 0;
+}
 
 .map-button:hover {
   background-color: #45a049;
@@ -64,7 +66,15 @@
 
   .map-button {
     width: auto;
-    margin-right: 10px; /* Mayor espacio entre botones en pantallas grandes */
+    margin-right: 10px;
+    margin-bottom: 0;
+  }
+  .map-button:last-child {
+    margin-right: 0;
+  }
+
+  .result-container {
+    min-height:80px;
+    padding: 1rem;
   }
 }
-

@@ -11,7 +11,11 @@ import {
 
 type Mode = "area" | "radius";
 type LatLng = google.maps.LatLngLiteral;
-type Measurement = string | null;
+type Measurement = {
+  area: string | null;
+  perimeter: string | null;
+  radius: string | null;
+};
 
 const mapContainerStyle = {
   width: "100%",
@@ -35,30 +39,68 @@ const MapMeasurement: React.FC = () => {
   const [points, setPoints] = useState<LatLng[]>([]);
   const [center, setCenter] = useState<LatLng | null>(null);
   const [radius, setRadius] = useState<number>(0);
-  const [measurement, setMeasurement] = useState<Measurement>(null);
+  const [measurement, setMeasurement] = useState<Measurement>({
+    area: null,
+    perimeter: null,
+    radius: null,
+  });
 
-  const cursorStyle = mode === "area" || mode === "radius" ? "crosshair" : "default";
+  const cursorStyle =
+    mode === "area" || mode === "radius" ? "crosshair" : "default";
 
   const calculateArea = useCallback((polygonPoints: LatLng[]) => {
     if (polygonPoints.length < 3) return;
     const area = google.maps.geometry.spherical.computeArea(
       polygonPoints.map((point) => new google.maps.LatLng(point.lat, point.lng))
     );
-    setMeasurement(`Área: ${area.toFixed(2)} m²`);
+    const areaM2 = area.toFixed(0);
+    const areaKm2 = (area / 1000000).toFixed(2);
+    setMeasurement((prevMeasurement) => ({
+      ...prevMeasurement,
+      area: `${areaM2} m² | ${areaKm2} km²`,
+    }));
+  }, []);
+
+  const calculatePerimeter = useCallback((polygonPoints: LatLng[]) => {
+    if (polygonPoints.length < 2) return;
+    let perimeter = 0;
+    for (let i = 0; i < polygonPoints.length - 1; i++) {
+      const point1 = polygonPoints[i];
+      const point2 = polygonPoints[i + 1];
+      perimeter += google.maps.geometry.spherical.computeDistanceBetween(
+        new google.maps.LatLng(point1),
+        new google.maps.LatLng(point2)
+      );
+    }
+    perimeter += google.maps.geometry.spherical.computeDistanceBetween(
+      new google.maps.LatLng(polygonPoints[0]),
+      new google.maps.LatLng(polygonPoints[polygonPoints.length - 1])
+    );
+    const perimeterM = perimeter.toFixed(0);
+    const perimeterKm = (perimeter / 1000).toFixed(2);
+    setMeasurement((prevMeasurement) => ({
+      ...prevMeasurement,
+      perimeter: `${perimeterM} m | ${perimeterKm} km`,
+    }));
   }, []);
 
   const calculateRadius = useCallback((newRadius: number) => {
     const area = Math.PI * newRadius * newRadius;
-    setMeasurement(
-      `Radio: ${newRadius.toFixed(2)} m, Área: ${area.toFixed(2)} m²`
-    );
+    const areaM2 = area.toFixed(0);
+    const areaKm2 = (area / 1000000).toFixed(2);
+    const radiusKm = (newRadius / 1000).toFixed(2);
+    setMeasurement((prevMeasurement) => ({
+      ...prevMeasurement,
+      area: `${areaM2} m² | ${areaKm2} km²`,
+      radius: `${newRadius} m | ${radiusKm} km`,
+    }));
   }, []);
 
   const resetMeasurement = useCallback(() => {
     setPoints([]);
     setCenter(null);
     setRadius(0);
-    setMeasurement(null);
+    setMeasurement({ area: null, perimeter: null, radius: null });
   }, []);
 
   const handleModeChange = (newMode: Mode) => {
@@ -106,6 +148,7 @@ const MapMeasurement: React.FC = () => {
         setPoints((current) => [...current, newPoint]);
         if (points.length >= 2) {
           calculateArea([...points, newPoint]);
+          calculatePerimeter([...points, newPoint]);
         }
       } else if (mode === "radius") {
         if (!center) {
@@ -121,7 +164,7 @@ const MapMeasurement: React.FC = () => {
         }
       }
     },
-    [mode, points, calculateArea, center, calculateRadius]
+    [mode, points, calculateArea, calculatePerimeter, center, calculateRadius]
   );
 
   if (loadError) return <div>Error al cargar el mapa</div>;
@@ -136,14 +179,23 @@ const MapMeasurement: React.FC = () => {
   return (
     <div className="map-container">
       <div className="button-container">
-        <button className="map-button" onClick={() => handleModeChange("area")}>Área</button>
-        <button className="map-button" onClick={() => handleModeChange("radius")}>Radio</button>
-        <button className="map-button" onClick={resetMeasurement}>Reiniciar</button>
+        <button className="map-button" onClick={() => handleModeChange("area")}>
+          Área
+        </button>
+        <button
+          className="map-button"
+          onClick={() => handleModeChange("radius")}
+        >
+          Radio
+        </button>
+        <button className="map-button" onClick={resetMeasurement}>
+          Reiniciar
+        </button>
       </div>
       <div className="google-map-container">
         <GoogleMap
           mapContainerStyle={{ ...mapContainerStyle, cursor: cursorStyle }}
-          zoom={6}
+          zoom={7}
           center={centerGMap}
           onClick={handleMapClick}
         >
@@ -169,7 +221,23 @@ const MapMeasurement: React.FC = () => {
         </GoogleMap>
       </div>
 
-      <div className="result-container">{measurement && <p>{measurement}</p>}</div>
+      <div className="result-container">
+        {measurement.radius && (
+          <p>
+            <strong>Radio:</strong> {measurement.radius}
+          </p>
+        )}
+        {measurement.area && (
+          <p>
+          <strong>Área:</strong> {measurement.area}
+        </p>
+        )}
+        {measurement.perimeter && (
+          <p>
+          <strong>Distancia total:</strong> {measurement.perimeter}
+        </p>
+        )}
+      </div>
     </div>
   );
 };
