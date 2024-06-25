@@ -35,6 +35,8 @@ const MapMeasurement: React.FC = () => {
     libraries,
   });
 
+  const [mapKey, setMapKey] = useState<number>(0);
+
   const [mode, setMode] = useState<Mode>("area");
   const [points, setPoints] = useState<LatLng[]>([]);
   const [center, setCenter] = useState<LatLng | null>(null);
@@ -101,6 +103,7 @@ const MapMeasurement: React.FC = () => {
     setCenter(null);
     setRadius(0);
     setMeasurement({ area: null, perimeter: null, radius: null });
+    setMapKey((prevKey) => prevKey + 1);
   }, []);
 
   const handleModeChange = (newMode: Mode) => {
@@ -179,12 +182,17 @@ const MapMeasurement: React.FC = () => {
   return (
     <div className="map-container">
       <div className="button-container">
-        <button className="map-button" onClick={() => handleModeChange("area")}>
+        <button
+          className={`map-button ${mode === "area" ? "active" : ""}`}
+          onClick={() => handleModeChange("area")}
+          disabled={mode === "area"}
+        >
           Área
         </button>
         <button
-          className="map-button"
+          className={`map-button ${mode === "radius" ? "active" : ""}`}
           onClick={() => handleModeChange("radius")}
+          disabled={mode === "radius"}
         >
           Radio
         </button>
@@ -194,6 +202,7 @@ const MapMeasurement: React.FC = () => {
       </div>
       <div className="google-map-container">
         <GoogleMap
+          key={mapKey}
           mapContainerStyle={{ ...mapContainerStyle, cursor: cursorStyle }}
           zoom={7}
           center={centerGMap}
@@ -229,13 +238,13 @@ const MapMeasurement: React.FC = () => {
         )}
         {measurement.area && (
           <p>
-          <strong>Área:</strong> {measurement.area}
-        </p>
+            <strong>Área:</strong> {measurement.area}
+          </p>
         )}
         {measurement.perimeter && (
           <p>
-          <strong>Distancia total:</strong> {measurement.perimeter}
-        </p>
+            <strong>Distancia total:</strong> {measurement.perimeter}
+          </p>
         )}
       </div>
     </div>
