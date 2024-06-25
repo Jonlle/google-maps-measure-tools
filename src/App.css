@@ -1,42 +1,82 @@
 #root {
   max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
+  box-sizing: border-box;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.map-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 800px;
+}
+
+.map-button {
+  flex: 1;
+  margin: 0 0.5rem;
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.google-map-container {
+  width: 100%;
+  max-width: 800px;
+  height: 60vh;
+  margin: 0 auto;
+}
+
+.result-container {
+  height: 56px;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  color: #213547;
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
+}
+
+.result-container p {
+  margin: 0; 
+}
+
+@media (max-width: 768px) {
+  .button-container {
+    flex-direction: column;
   }
-  to {
-    transform: rotate(360deg);
+
+  .map-button {
+    margin: 0.5rem 0;
+    width: 100%;
+    max-width: none;
+  }
+
+  .google-map-container {
+    height: 50vh;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@media (min-width: 769px) and (max-width: 1024px) {
+  .map-button {
+    min-width: 150px;
   }
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+@media (prefers-color-scheme: dark) {
+  .result-container {
+    background-color: #2a2a2a;
+    color: rgba(255, 255, 255, 0.87);
+  }
 }
