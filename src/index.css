@@ -1,3 +1,18 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+
+@layer components {
+  .btn {
+    @apply min-w-20 rounded-full px-5 py-2 text-sm font-semibold leading-5 transition-colors duration-200 ease-in-out sm:min-w-24;
+  }
+  .btn--primary {
+    @apply bg-violet-500 text-white;
+  }
+  .btn.active {
+    @apply outline-none ring;
+  }
+  .btn--primary.active {
+    @apply bg-violet-700 ring-violet-300;
+  }
+}
