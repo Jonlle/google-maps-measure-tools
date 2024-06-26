@@ -1,13 +1,7 @@
-import MapMeasurement from "./MapMeasurement";
-import "./App.css";
+import MainPage from "./components/MainPage";
 
 function App() {
-  return (
-    <div className="App">
-      <h1>Google Maps Measurement Tool</h1>
-      <MapMeasurement />
-    </div>
-  );
+  return <MainPage />;
 }
 
 export default App;

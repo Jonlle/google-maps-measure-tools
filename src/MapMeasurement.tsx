@@ -47,9 +47,6 @@ const MapMeasurement: React.FC = () => {
     radius: null,
   });
 
-  const cursorStyle =
-    mode === "area" || mode === "radius" ? "crosshair" : "default";
-
   const calculateArea = useCallback((polygonPoints: LatLng[]) => {
     if (polygonPoints.length < 3) return;
     const area = google.maps.geometry.spherical.computeArea(
@@ -109,6 +106,18 @@ const MapMeasurement: React.FC = () => {
   const handleModeChange = (newMode: Mode) => {
     resetMeasurement();
     setMode(newMode);
+  };
+
+  const handleDeleteLastPoint = () => {
+    if (points.length > 0) {
+      const updatedPoints = [...points];
+      updatedPoints.pop(); // Remove the last point
+      setPoints(updatedPoints);
+      if (mode === "area" && updatedPoints.length >= 3) {
+        calculateArea(updatedPoints);
+        calculatePerimeter(updatedPoints);
+      }
+    }
   };
 
   const polygonOptions = useMemo(
@@ -186,6 +195,7 @@ const MapMeasurement: React.FC = () => {
           className={`map-button ${mode === "area" ? "active" : ""}`}
           onClick={() => handleModeChange("area")}
           disabled={mode === "area"}
+          tabIndex={mode === "area" || mode === "radius" ? 0 : -1}
         >
           Área
         </button>
@@ -193,17 +203,27 @@ const MapMeasurement: React.FC = () => {
           className={`map-button ${mode === "radius" ? "active" : ""}`}
           onClick={() => handleModeChange("radius")}
           disabled={mode === "radius"}
+          tabIndex={mode === "area" || mode === "radius" ? 0 : -1}
         >
           Radio
         </button>
-        <button className="map-button" onClick={resetMeasurement}>
+        <button className="map-button" onClick={resetMeasurement} tabIndex={-1}>
           Reiniciar
         </button>
+        {mode === "area" && points.length > 0 && (
+          <button
+            className="map-button"
+            onClick={handleDeleteLastPoint}
+            tabIndex={0}
+          >
+            Eliminar último punto
+          </button>
+        )}
       </div>
       <div className="google-map-container">
         <GoogleMap
           key={mapKey}
-          mapContainerStyle={{ ...mapContainerStyle, cursor: cursorStyle }}
+          mapContainerStyle={mapContainerStyle}
           zoom={7}
           center={centerGMap}
           onClick={handleMapClick}
@@ -217,18 +237,18 @@ const MapMeasurement: React.FC = () => {
                 <Polyline path={points} options={polylineOptions} />
               )}
               {points.length > 2 && (
-                <Polygon paths={points} options={polygonOptions} />
+                <Polygon paths={points} options={polygonOptions} editable/>
               )}
             </>
           )}
           {mode === "radius" && center && (
             <>
-              <Circle center={center} radius={radius} options={circleOptions} />
-              <Marker position={center} icon={nodeIcon} />
+              <Circle center={center} radius={radius} options={circleOptions} editable/>
+              {/* <Marker position={center} icon={nodeIcon} /> */}
             </>
           )}
         </GoogleMap>
-      </div>
+        </div>
 
       <div className="result-container">
         {measurement.radius && (
