@@ -1,44 +1,31 @@
 // src/components/CircleMap.tsx
-import { useEffect, useState } from "react";
+import { Circle } from "@react-google-maps/api";
 
 interface CircleMapProps {
-  map: google.maps.Map;
   center?: google.maps.LatLngLiteral | null;
   radius?: number;
 }
 
-const CircleMap = ({ map, center, radius }:CircleMapProps) => {
-  const [circle, setCircle] = useState<google.maps.Circle | null>(null);
+const options = {
+  strokeColor: "#FF0000",
+  strokeOpacity: 0.8,
+  strokeWeight: 2,
+  fillColor: "#FF0000",
+  fillOpacity: 0.35,
+};
 
-  useEffect(() => {
-    if (circle) {
-      circle.setMap(null);
-    }
+const CircleMap = ({ center, radius }: CircleMapProps) => {
+  if (!center || !radius || radius <= 0) {
+    return null;
+  }
 
-    if (!map || !center || !radius || radius < 0) {
-      setCircle(null);
-      return;
-    }
-
-    const newCircle = new google.maps.Circle({
-      strokeColor: "#FF0000",
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: "#FF0000",
-      fillOpacity: 0.35,
-      map,
-      center,
-      radius,
-    });
-
-    setCircle(newCircle);
-
-    return () => {
-      newCircle.setMap(null);
-    };
-  }, [map, center, radius]);
-
-  return null;
+  return (
+    <Circle
+      center={center}
+      radius={radius}
+      options={options}
+    />
+  );
 };
 
 export default CircleMap;

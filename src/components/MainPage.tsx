@@ -1,7 +1,7 @@
 // src/components/MainPage.tsx
 import { useState } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
-import CircleMap from "./CircleMap"; // Importar CircleMap
+import CircleMap from "./CircleMap";
 import Result from "./Result";
 
 type Mode = "area" | "radius" | null;
@@ -108,7 +108,7 @@ const MainPage = () => {
 
       <GoogleMapContainer mode={mode} onMapLoad={handleMapLoad}>
         {mode === "radius" && map && (
-          <CircleMap map={map} center={center} radius={drawMode ? 0 : radius} />
+          <CircleMap center={center} radius={drawMode ? 0 : radius} />
         )}
       </GoogleMapContainer>
       <Result area={null} perimeter={null} radius={null} />
