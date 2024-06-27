@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
 import CircleMap from "./CircleMap"; // Importar CircleMap
-import Result from './Result';
+import Result from "./Result";
 
 type Mode = "area" | "radius" | null;
 
@@ -17,15 +17,18 @@ const MainPage: React.FC = () => {
     setMode(newMode);
     setRadius(0);
     setDrawMode(false);
+    setCenter(null);
   };
 
-  const handleRadiusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedRadius = Number(event.target.value);
-    setRadius(selectedRadius);
+  const handleRadiusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRadius(Number(e.target.value));
     if (map) {
-      setCenter({ lat: map.getCenter()!.lat(), lng: map.getCenter()!.lng() });
+      setCenter({
+        lat: map.getCenter()!.lat(),
+        lng: map.getCenter()!.lng(),
+      });
     }
-  };  
+  };
 
   const handleDrawClick = () => {
     setDrawMode(true);
@@ -33,22 +36,27 @@ const MainPage: React.FC = () => {
 
   const handleMapLoad = (map: google.maps.Map) => {
     setMap(map);
-    setCenter(map.getCenter() ? { lat: map.getCenter()!.lat(), lng: map.getCenter()!.lng() } : null);
+    if (mode === "radius") {
+      setCenter({
+        lat: map.getCenter()!.lat(),
+        lng: map.getCenter()!.lng(),
+      });
+    }
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Map Measurement Tool</h1>
-      <p className="text-lg mb-4">Selecciona una opción para calcular:</p>
+    <div className="mx-auto max-w-7xl p-4">
+      <h1 className="mb-4 text-2xl font-bold">Map Measurement Tool</h1>
+      <p className="mb-4 text-lg">Selecciona una opción para calcular:</p>
       <div className="mb-4 flex justify-start space-x-2">
         <button
-          className={`button button--primary ${mode === 'area' ? 'button--active' : ''}`}
+          className={`button button--primary ${mode === "area" ? "button--active" : ""}`}
           onClick={() => handleModeChange("area")}
         >
           Área
         </button>
         <button
-          className={`button button--primary ${mode === 'radius' ? 'button--active' : ''}`}
+          className={`button button--primary ${mode === "radius" ? "button--active" : ""}`}
           onClick={() => handleModeChange("radius")}
         >
           Radio
@@ -64,7 +72,7 @@ const MainPage: React.FC = () => {
             Dibujar un círculo
           </button>
           <select
-            className="ml-2 p-2 border border-gray-300 rounded"
+            className="ml-2 rounded border border-gray-300 p-2"
             value={radius}
             onChange={handleRadiusChange}
           >
@@ -100,11 +108,7 @@ const MainPage: React.FC = () => {
 
       <GoogleMapContainer mode={mode} onMapLoad={handleMapLoad}>
         {mode === "radius" && map && (
-          <CircleMap
-            map={map}
-            center={radius > 0 && center ? center : undefined}
-            radius={drawMode ? 0 : radius}
-          />
+          <CircleMap map={map} center={center} radius={drawMode ? 0 : radius} />
         )}
       </GoogleMapContainer>
       <Result area={null} perimeter={null} radius={null} />
