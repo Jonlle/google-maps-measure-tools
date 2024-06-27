@@ -1,12 +1,12 @@
 // src/components/MainPage.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
 import CircleMap from "./CircleMap"; // Importar CircleMap
 import Result from "./Result";
 
 type Mode = "area" | "radius" | null;
 
-const MainPage: React.FC = () => {
+const MainPage = () => {
   const [mode, setMode] = useState<Mode>(null);
   const [radius, setRadius] = useState<number>(0);
   const [drawMode, setDrawMode] = useState<boolean>(false);

@@ -1,5 +1,4 @@
 // src/components/GoogleMapContainer.tsx
-import React from "react";
 import { GoogleMap, useLoadScript, Libraries } from "@react-google-maps/api";
 
 const googleMapProps = {
@@ -22,11 +21,11 @@ interface GoogleMapContainerProps {
   onMapLoad: (map: google.maps.Map) => void;
 }
 
-const GoogleMapContainer: React.FC<GoogleMapContainerProps> = ({
+const GoogleMapContainer = ({
   children,
   mode,
   onMapLoad,
-}) => {
+}: GoogleMapContainerProps) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
     libraries,

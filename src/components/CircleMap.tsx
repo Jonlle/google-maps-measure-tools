@@ -1,6 +1,5 @@
 // src/components/CircleMap.tsx
-import React, { useEffect, useState } from "react";
-import { Circle } from "@react-google-maps/api";
+import { useEffect, useState } from "react";
 
 interface CircleMapProps {
   map: google.maps.Map;
@@ -8,7 +7,7 @@ interface CircleMapProps {
   radius?: number;
 }
 
-const CircleMap: React.FC<CircleMapProps> = ({ map, center, radius }) => {
+const CircleMap = ({ map, center, radius }:CircleMapProps) => {
   const [circle, setCircle] = useState<google.maps.Circle | null>(null);
 
   useEffect(() => {

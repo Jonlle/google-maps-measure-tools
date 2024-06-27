@@ -1,12 +1,10 @@
-import React from 'react';
-
 interface ResultProps {
   area: string | null;
   perimeter: string | null;
   radius: string | null;
 }
 
-const Result: React.FC<ResultProps> = ({ area, perimeter, radius }) => {
+const Result = ({ area, perimeter, radius }:ResultProps) => {
   return (
     <div className="mt-4 p-4 bg-gray-100 rounded shadow-lg">
       {area && (
