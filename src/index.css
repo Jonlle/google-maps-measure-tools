@@ -3,16 +3,22 @@
 @import "tailwindcss/utilities";
 
 @layer components {
-  .btn {
+  .button {
     @apply min-w-20 rounded-full px-5 py-2 text-sm font-semibold leading-5 transition-colors duration-200 ease-in-out sm:min-w-24;
   }
-  .btn--primary {
+  .button--primary {
     @apply bg-violet-500 text-white;
   }
-  .btn.active {
+  .button--secondary {
+    @apply border border-violet-700 bg-transparent text-violet-700 hover:bg-violet-200;
+  }
+  .button--active {
     @apply outline-none ring;
   }
-  .btn--primary.active {
+  .button--primary.button--active {
     @apply bg-violet-700 ring-violet-300;
+  }
+  .button--secondary.button--active {
+    @apply border-violet-800 text-violet-800;
   }
 }
