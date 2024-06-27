@@ -14,9 +14,8 @@ const MainPage: React.FC = () => {
   const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(null);
   const [area, setArea] = useState<string | null>(null);
   const [formattedRadius, setFormattedRadius] = useState<string | null>(null);
-  const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(
-    null,
-  );
+  const [circle, setCircle] = useState<google.maps.Circle | null>(null);
+  const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null);
 
   const handleModeChange = (newMode: Mode) => {
     setMode(newMode);
@@ -25,6 +24,10 @@ const MainPage: React.FC = () => {
     setCenter(null);
     setArea(null);
     setFormattedRadius(null);
+    if (circle) {
+      circle.setMap(null);
+      setCircle(null);
+    }
   };
 
   const handleRadiusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -42,9 +45,13 @@ const MainPage: React.FC = () => {
   };
 
   const handleDrawClick = () => {
-    if (mode === "radius") {
+    if (mode === "radius" && !circle) {
       setDrawMode(true);
     }
+  };
+
+  const handleCancelDrawClick = () => {
+    setDrawMode(false);
   };
 
   const handleMapLoad = (map: google.maps.Map) => {
@@ -57,6 +64,7 @@ const MainPage: React.FC = () => {
       setCenter(center);
     }
 
+    // Initialize Drawing Manager
     const drawingManager = new google.maps.drawing.DrawingManager({
       drawingMode: google.maps.drawing.OverlayType.CIRCLE,
       drawingControl: false,
@@ -73,21 +81,29 @@ const MainPage: React.FC = () => {
     drawingManager.setMap(map);
     drawingManagerRef.current = drawingManager;
 
-    google.maps.event.addListener(
-      drawingManager,
-      "circlecomplete",
-      (circle: google.maps.Circle) => {
-        setDrawMode(false);
-        drawingManager.setDrawingMode(null);
+    google.maps.event.addListener(drawingManager, 'circlecomplete', (circle: google.maps.Circle) => {
+      setDrawMode(false);
+      drawingManager.setDrawingMode(null);
 
-        const radius = circle.getRadius();
-        const center = circle.getCenter();
+      setCircle(circle);
+      const radius = circle.getRadius();
+      const center = circle.getCenter();
 
-        setRadius(radius);
-        setCenter({ lat: center!.lat(), lng: center!.lng() });
-        calculateAreaAndRadius(radius);
-      },
-    );
+      setRadius(radius);
+      setCenter({ lat: center!.lat(), lng: center!.lng() });
+      calculateAreaAndRadius(radius);
+
+      google.maps.event.addListener(circle, 'radius_changed', () => {
+        const newRadius = circle.getRadius();
+        setRadius(newRadius);
+        calculateAreaAndRadius(newRadius);
+      });
+
+      google.maps.event.addListener(circle, 'center_changed', () => {
+        const newCenter = circle.getCenter();
+        setCenter({ lat: newCenter!.lat(), lng: newCenter!.lng() });
+      });
+    });
   };
 
   const calculateAreaAndRadius = (radius: number) => {
@@ -133,9 +149,7 @@ const MainPage: React.FC = () => {
 
   useEffect(() => {
     if (drawMode && drawingManagerRef.current) {
-      drawingManagerRef.current.setDrawingMode(
-        google.maps.drawing.OverlayType.CIRCLE,
-      );
+      drawingManagerRef.current.setDrawingMode(google.maps.drawing.OverlayType.CIRCLE);
     } else if (drawingManagerRef.current) {
       drawingManagerRef.current.setDrawingMode(null);
     }
@@ -161,17 +175,27 @@ const MainPage: React.FC = () => {
       </div>
 
       {mode === "radius" && (
-        <div className="mb-4">
+        <div className="mb-4 flex space-x-2">
           <button
             className="button button--secondary"
             onClick={handleDrawClick}
+            disabled={!!circle}
           >
             Dibujar un círculo
           </button>
+          {drawMode && (
+            <button
+              className="button button--secondary"
+              onClick={handleCancelDrawClick}
+            >
+              Cancelar Dibujo
+            </button>
+          )}
           <select
             className="ml-2 rounded border border-gray-300 p-2"
             value={radius}
             onChange={handleRadiusChange}
+            disabled={drawMode}
           >
             <option value="0">Selecciona un radio</option>
             <option value="50">50 m</option>
@@ -204,8 +228,8 @@ const MainPage: React.FC = () => {
       )}
 
       <GoogleMapContainer mode={mode} onMapLoad={handleMapLoad}>
-        {mode === "radius" && map && (
-          <CircleMap center={center} radius={drawMode ? 0 : radius} />
+        {mode === "radius" && map && circle && (
+          <CircleMap center={center} radius={radius} />
         )}
       </GoogleMapContainer>
       <Result area={area} perimeter={null} radius={formattedRadius} />
