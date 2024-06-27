@@ -43,17 +43,28 @@ const MainPage: React.FC = () => {
       setCenter(center);
       calculateAreaAndRadius(newRadius);
       fitMapToCircle(center, newRadius);
+      if (!circle) {
+        drawCircle(center, newRadius);
+      }
     }
   };
 
   const handleDrawClick = () => {
     if (mode === "radius" && !circle) {
       setDrawMode(true);
+      if (drawingManagerRef.current && map) {
+        drawingManagerRef.current.setDrawingMode(
+          google.maps.drawing.OverlayType.CIRCLE,
+        );
+      }
     }
   };
 
   const handleCancelDrawClick = () => {
     setDrawMode(false);
+    if (drawingManagerRef.current) {
+      drawingManagerRef.current.setDrawingMode(null);
+    }
   };
 
   const handleClearCircleClick = () => {
@@ -70,17 +81,9 @@ const MainPage: React.FC = () => {
 
   const handleMapLoad = (map: google.maps.Map) => {
     setMap(map);
-    if (mode === "radius") {
-      const center = {
-        lat: map.getCenter()!.lat(),
-        lng: map.getCenter()!.lng(),
-      };
-      setCenter(center);
-    }
 
-    // Initialize Drawing Manager
     const drawingManager = new google.maps.drawing.DrawingManager({
-      drawingMode: google.maps.drawing.OverlayType.CIRCLE,
+      drawingMode: null,
       drawingControl: false,
       circleOptions: {
         fillColor: "#FF0000",
@@ -159,6 +162,25 @@ const MainPage: React.FC = () => {
     }
   };
 
+  const drawCircle = (
+    center: google.maps.LatLngLiteral,
+    radius: number,
+  ) => {
+    const circleOptions: google.maps.CircleOptions = {
+      strokeColor: "#FF0000",
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: "#FF0000",
+      fillOpacity: 0.35,
+      map,
+      center,
+      radius,
+    };
+
+    const newCircle = new google.maps.Circle(circleOptions);
+    setCircle(newCircle);
+  };
+
   useEffect(() => {
     if (radius > 0 && map) {
       calculateAreaAndRadius(radius);
@@ -166,14 +188,10 @@ const MainPage: React.FC = () => {
   }, [radius, map]);
 
   useEffect(() => {
-    if (drawMode && drawingManagerRef.current) {
-      drawingManagerRef.current.setDrawingMode(
-        google.maps.drawing.OverlayType.CIRCLE,
-      );
-    } else if (drawingManagerRef.current) {
-      drawingManagerRef.current.setDrawingMode(null);
+    if (circle) {
+      setDrawMode(false);
     }
-  }, [drawMode]);
+  }, [circle]);
 
   return (
     <div className="mx-auto max-w-7xl p-4">
@@ -203,7 +221,7 @@ const MainPage: React.FC = () => {
               className="select__field"
               value={radius}
               onChange={handleRadiusChange}
-              disabled={drawMode}
+              disabled={drawMode || !!circle}
             >
               <option value="0" className="select__option">
                 Selecciona un radio
@@ -262,7 +280,10 @@ const MainPage: React.FC = () => {
       )}
 
       <GoogleMapContainer mode={mode} onMapLoad={handleMapLoad}>
-        {mode === "radius" && map && circle && (
+        {mode === "radius" && !circle && map && (
+          <CircleMap center={center} radius={radius} />
+        )}
+        {mode === "radius" && circle && (
           <CircleMap center={center} radius={radius} />
         )}
       </GoogleMapContainer>
