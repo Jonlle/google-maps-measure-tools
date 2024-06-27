@@ -34,6 +34,7 @@ const MainPage: React.FC = () => {
       };
       setCenter(center);
       calculateAreaAndRadius(newRadius);
+      fitMapToCircle(center, newRadius);
     }
   };
 
@@ -44,10 +45,11 @@ const MainPage: React.FC = () => {
   const handleMapLoad = (map: google.maps.Map) => {
     setMap(map);
     if (mode === "radius") {
-      setCenter({
+      const center = {
         lat: map.getCenter()!.lat(),
         lng: map.getCenter()!.lng(),
-      });
+      };
+      setCenter(center);
     }
   };
 
@@ -55,13 +57,35 @@ const MainPage: React.FC = () => {
     const areaInSquareMeters = Math.PI * Math.pow(radius, 2);
     const areaInSquareKilometers = areaInSquareMeters / 1e6;
     setArea(
-      `${areaInSquareMeters.toFixed(0)} m² | ${areaInSquareKilometers.toFixed(2)} km²`
+      `${areaInSquareMeters.toFixed(0)} m² | ${areaInSquareKilometers.toFixed(2)} km²`,
     );
 
     const radiusInKilometers = radius / 1000;
     setFormattedRadius(
-      `${radius.toFixed(0)} m | ${radiusInKilometers.toFixed(2)} km`
+      `${radius.toFixed(0)} m | ${radiusInKilometers.toFixed(2)} km`,
     );
+  };
+
+  const fitMapToCircle = (
+    center: google.maps.LatLngLiteral,
+    radius: number,
+  ) => {
+    if (map) {
+      const bounds = new google.maps.LatLngBounds();
+      const start = google.maps.geometry.spherical.computeOffset(
+        center,
+        radius * 1.1,
+        225,
+      );
+      const end = google.maps.geometry.spherical.computeOffset(
+        center,
+        radius * 1.1,
+        45,
+      );
+      bounds.extend(start);
+      bounds.extend(end);
+      map.fitBounds(bounds);
+    }
   };
 
   useEffect(() => {
