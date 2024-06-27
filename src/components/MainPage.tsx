@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
 import CircleMap from "./CircleMap";
 import Result from "./Result";
+import { radiusOptions, RadiusOptions } from "../utils/radiusOptions";
 
 type Mode = "area" | "radius" | null;
 
@@ -223,34 +224,15 @@ const MainPage: React.FC = () => {
               onChange={handleRadiusChange}
               disabled={drawMode || !!circle}
             >
-              <option value="0" className="select__option">
+              <option value="0" className="select__option" disabled>
                 Selecciona un radio
               </option>
-              <option value="50">50 m</option>
-              <option value="100">100 m</option>
-              <option value="200">200 m</option>
-              <option value="300">300 m</option>
-              <option value="400">400 m</option>
-              <option value="500">500 m</option>
-              <option value="1000">1 km</option>
-              <option value="2000">2 km</option>
-              <option value="3000">3 km</option>
-              <option value="4000">4 km</option>
-              <option value="5000">5 km</option>
-              <option value="6000">6 km</option>
-              <option value="7000">7 km</option>
-              <option value="8000">8 km</option>
-              <option value="9000">9 km</option>
-              <option value="10000">10 km</option>
-              <option value="15000">15 km</option>
-              <option value="20000">20 km</option>
-              <option value="25000">25 km</option>
-              <option value="30000">30 km</option>
-              <option value="35000">35 km</option>
-              <option value="40000">40 km</option>
-              <option value="45000">45 km</option>
-              <option value="50000">50 km</option>
-              <option value="100000">100 km</option>
+              {radiusOptions.map((option: RadiusOptions) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+              )
             </select>
           </div>
           <button
