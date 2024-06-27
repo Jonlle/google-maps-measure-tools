@@ -6,19 +6,70 @@
   .button {
     @apply min-w-20 rounded-full px-5 py-2 text-sm font-semibold leading-5 transition-colors duration-200 ease-in-out sm:min-w-24;
   }
+
   .button--primary {
     @apply bg-violet-500 text-white;
   }
+
   .button--secondary {
-    @apply border border-violet-700 bg-transparent text-violet-700 hover:bg-violet-200;
+    @apply border border-violet-700 bg-transparent text-violet-700;
   }
+
+  .button:not([disabled]):hover {
+    @apply hover:shadow-md;
+  }
+
+  .button--primary:not([disabled]):hover {
+    @apply hover:bg-violet-600;
+  }
+
+  .button--secondary:not([disabled]):hover {
+    @apply hover:bg-violet-100;
+  }
+
+  .button:disabled {
+    @apply opacity-50;
+  }
+
   .button--active {
     @apply outline-none ring;
   }
+
   .button--primary.button--active {
     @apply bg-violet-700 ring-violet-300;
   }
+
   .button--secondary.button--active {
     @apply border-violet-800 text-violet-800;
+  }
+
+  .select {
+    @apply relative inline-block;
+  }
+
+  .select__field {
+    @apply appearance-none rounded border border-gray-300 bg-white px-4 py-2 pr-10 text-sm font-medium text-gray-700 shadow-sm transition-colors duration-200 ease-in-out;
+    @apply focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-opacity-50;
+  }
+
+  .select__field:not([disabled]) {
+    @apply  cursor-pointer hover:border-violet-400;
+  }
+
+  .select__field:disabled {
+    @apply opacity-50;
+  }
+
+  .select::after {
+    content: '';
+    @apply pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 transform;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+
+  .select__option {
+    @apply truncate pr-8;
   }
 }

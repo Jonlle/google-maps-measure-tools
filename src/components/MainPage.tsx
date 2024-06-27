@@ -15,7 +15,9 @@ const MainPage: React.FC = () => {
   const [area, setArea] = useState<string | null>(null);
   const [formattedRadius, setFormattedRadius] = useState<string | null>(null);
   const [circle, setCircle] = useState<google.maps.Circle | null>(null);
-  const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(null);
+  const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(
+    null,
+  );
 
   const handleModeChange = (newMode: Mode) => {
     setMode(newMode);
@@ -54,6 +56,18 @@ const MainPage: React.FC = () => {
     setDrawMode(false);
   };
 
+  const handleClearCircleClick = () => {
+    if (circle) {
+      circle.setMap(null);
+      setCircle(null);
+      setDrawMode(false);
+      setRadius(0);
+      setCenter(null);
+      setArea(null);
+      setFormattedRadius(null);
+    }
+  };
+
   const handleMapLoad = (map: google.maps.Map) => {
     setMap(map);
     if (mode === "radius") {
@@ -81,29 +95,33 @@ const MainPage: React.FC = () => {
     drawingManager.setMap(map);
     drawingManagerRef.current = drawingManager;
 
-    google.maps.event.addListener(drawingManager, 'circlecomplete', (circle: google.maps.Circle) => {
-      setDrawMode(false);
-      drawingManager.setDrawingMode(null);
+    google.maps.event.addListener(
+      drawingManager,
+      "circlecomplete",
+      (circle: google.maps.Circle) => {
+        setDrawMode(false);
+        drawingManager.setDrawingMode(null);
 
-      setCircle(circle);
-      const radius = circle.getRadius();
-      const center = circle.getCenter();
+        setCircle(circle);
+        const radius = circle.getRadius();
+        const center = circle.getCenter();
 
-      setRadius(radius);
-      setCenter({ lat: center!.lat(), lng: center!.lng() });
-      calculateAreaAndRadius(radius);
+        setRadius(radius);
+        setCenter({ lat: center!.lat(), lng: center!.lng() });
+        calculateAreaAndRadius(radius);
 
-      google.maps.event.addListener(circle, 'radius_changed', () => {
-        const newRadius = circle.getRadius();
-        setRadius(newRadius);
-        calculateAreaAndRadius(newRadius);
-      });
+        google.maps.event.addListener(circle, "radius_changed", () => {
+          const newRadius = circle.getRadius();
+          setRadius(newRadius);
+          calculateAreaAndRadius(newRadius);
+        });
 
-      google.maps.event.addListener(circle, 'center_changed', () => {
-        const newCenter = circle.getCenter();
-        setCenter({ lat: newCenter!.lat(), lng: newCenter!.lng() });
-      });
-    });
+        google.maps.event.addListener(circle, "center_changed", () => {
+          const newCenter = circle.getCenter();
+          setCenter({ lat: newCenter!.lat(), lng: newCenter!.lng() });
+        });
+      },
+    );
   };
 
   const calculateAreaAndRadius = (radius: number) => {
@@ -149,7 +167,9 @@ const MainPage: React.FC = () => {
 
   useEffect(() => {
     if (drawMode && drawingManagerRef.current) {
-      drawingManagerRef.current.setDrawingMode(google.maps.drawing.OverlayType.CIRCLE);
+      drawingManagerRef.current.setDrawingMode(
+        google.maps.drawing.OverlayType.CIRCLE,
+      );
     } else if (drawingManagerRef.current) {
       drawingManagerRef.current.setDrawingMode(null);
     }
@@ -163,12 +183,14 @@ const MainPage: React.FC = () => {
         <button
           className={`button button--primary ${mode === "area" ? "button--active" : ""}`}
           onClick={() => handleModeChange("area")}
+          disabled={mode === "area"}
         >
           Área
         </button>
         <button
           className={`button button--primary ${mode === "radius" ? "button--active" : ""}`}
           onClick={() => handleModeChange("radius")}
+          disabled={mode === "radius"}
         >
           Radio
         </button>
@@ -176,10 +198,47 @@ const MainPage: React.FC = () => {
 
       {mode === "radius" && (
         <div className="mb-4 flex space-x-2">
+          <div className="select">
+            <select
+              className="select__field"
+              value={radius}
+              onChange={handleRadiusChange}
+              disabled={drawMode}
+            >
+              <option value="0" className="select__option">
+                Selecciona un radio
+              </option>
+              <option value="50">50 m</option>
+              <option value="100">100 m</option>
+              <option value="200">200 m</option>
+              <option value="300">300 m</option>
+              <option value="400">400 m</option>
+              <option value="500">500 m</option>
+              <option value="1000">1 km</option>
+              <option value="2000">2 km</option>
+              <option value="3000">3 km</option>
+              <option value="4000">4 km</option>
+              <option value="5000">5 km</option>
+              <option value="6000">6 km</option>
+              <option value="7000">7 km</option>
+              <option value="8000">8 km</option>
+              <option value="9000">9 km</option>
+              <option value="10000">10 km</option>
+              <option value="15000">15 km</option>
+              <option value="20000">20 km</option>
+              <option value="25000">25 km</option>
+              <option value="30000">30 km</option>
+              <option value="35000">35 km</option>
+              <option value="40000">40 km</option>
+              <option value="45000">45 km</option>
+              <option value="50000">50 km</option>
+              <option value="100000">100 km</option>
+            </select>
+          </div>
           <button
-            className="button button--secondary"
+            className={`button button--secondary`}
             onClick={handleDrawClick}
-            disabled={!!circle}
+            disabled={drawMode || !!circle}
           >
             Dibujar un círculo
           </button>
@@ -191,39 +250,14 @@ const MainPage: React.FC = () => {
               Cancelar Dibujo
             </button>
           )}
-          <select
-            className="ml-2 rounded border border-gray-300 p-2"
-            value={radius}
-            onChange={handleRadiusChange}
-            disabled={drawMode}
-          >
-            <option value="0">Selecciona un radio</option>
-            <option value="50">50 m</option>
-            <option value="100">100 m</option>
-            <option value="200">200 m</option>
-            <option value="300">300 m</option>
-            <option value="400">400 m</option>
-            <option value="500">500 m</option>
-            <option value="1000">1 km</option>
-            <option value="2000">2 km</option>
-            <option value="3000">3 km</option>
-            <option value="4000">4 km</option>
-            <option value="5000">5 km</option>
-            <option value="6000">6 km</option>
-            <option value="7000">7 km</option>
-            <option value="8000">8 km</option>
-            <option value="9000">9 km</option>
-            <option value="10000">10 km</option>
-            <option value="15000">15 km</option>
-            <option value="20000">20 km</option>
-            <option value="25000">25 km</option>
-            <option value="30000">30 km</option>
-            <option value="35000">35 km</option>
-            <option value="40000">40 km</option>
-            <option value="45000">45 km</option>
-            <option value="50000">50 km</option>
-            <option value="100000">100 km</option>
-          </select>
+          {circle && (
+            <button
+              className="button button--secondary"
+              onClick={handleClearCircleClick}
+            >
+              Limpiar Círculo
+            </button>
+          )}
         </div>
       )}
 
