@@ -1,5 +1,5 @@
 // src/components/MainPage.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
 import CircleMap from "./CircleMap";
 import Result from "./Result";
@@ -14,6 +14,9 @@ const MainPage: React.FC = () => {
   const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(null);
   const [area, setArea] = useState<string | null>(null);
   const [formattedRadius, setFormattedRadius] = useState<string | null>(null);
+  const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(
+    null,
+  );
 
   const handleModeChange = (newMode: Mode) => {
     setMode(newMode);
@@ -39,7 +42,9 @@ const MainPage: React.FC = () => {
   };
 
   const handleDrawClick = () => {
-    setDrawMode(true);
+    if (mode === "radius") {
+      setDrawMode(true);
+    }
   };
 
   const handleMapLoad = (map: google.maps.Map) => {
@@ -51,6 +56,38 @@ const MainPage: React.FC = () => {
       };
       setCenter(center);
     }
+
+    const drawingManager = new google.maps.drawing.DrawingManager({
+      drawingMode: google.maps.drawing.OverlayType.CIRCLE,
+      drawingControl: false,
+      circleOptions: {
+        fillColor: "#FF0000",
+        fillOpacity: 0.35,
+        strokeWeight: 2,
+        clickable: false,
+        editable: true,
+        zIndex: 1,
+      },
+    });
+
+    drawingManager.setMap(map);
+    drawingManagerRef.current = drawingManager;
+
+    google.maps.event.addListener(
+      drawingManager,
+      "circlecomplete",
+      (circle: google.maps.Circle) => {
+        setDrawMode(false);
+        drawingManager.setDrawingMode(null);
+
+        const radius = circle.getRadius();
+        const center = circle.getCenter();
+
+        setRadius(radius);
+        setCenter({ lat: center!.lat(), lng: center!.lng() });
+        calculateAreaAndRadius(radius);
+      },
+    );
   };
 
   const calculateAreaAndRadius = (radius: number) => {
@@ -93,6 +130,16 @@ const MainPage: React.FC = () => {
       calculateAreaAndRadius(radius);
     }
   }, [radius, map]);
+
+  useEffect(() => {
+    if (drawMode && drawingManagerRef.current) {
+      drawingManagerRef.current.setDrawingMode(
+        google.maps.drawing.OverlayType.CIRCLE,
+      );
+    } else if (drawingManagerRef.current) {
+      drawingManagerRef.current.setDrawingMode(null);
+    }
+  }, [drawMode]);
 
   return (
     <div className="mx-auto max-w-7xl p-4">
