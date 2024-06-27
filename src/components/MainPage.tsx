@@ -1,32 +1,39 @@
 // src/components/MainPage.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
 import CircleMap from "./CircleMap";
 import Result from "./Result";
 
 type Mode = "area" | "radius" | null;
 
-const MainPage = () => {
+const MainPage: React.FC = () => {
   const [mode, setMode] = useState<Mode>(null);
   const [radius, setRadius] = useState<number>(0);
   const [drawMode, setDrawMode] = useState<boolean>(false);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(null);
+  const [area, setArea] = useState<string | null>(null);
+  const [formattedRadius, setFormattedRadius] = useState<string | null>(null);
 
   const handleModeChange = (newMode: Mode) => {
     setMode(newMode);
     setRadius(0);
     setDrawMode(false);
     setCenter(null);
+    setArea(null);
+    setFormattedRadius(null);
   };
 
   const handleRadiusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRadius(Number(e.target.value));
+    const newRadius = Number(e.target.value);
+    setRadius(newRadius);
     if (map) {
-      setCenter({
+      const center = {
         lat: map.getCenter()!.lat(),
         lng: map.getCenter()!.lng(),
-      });
+      };
+      setCenter(center);
+      calculateAreaAndRadius(newRadius);
     }
   };
 
@@ -43,6 +50,25 @@ const MainPage = () => {
       });
     }
   };
+
+  const calculateAreaAndRadius = (radius: number) => {
+    const areaInSquareMeters = Math.PI * Math.pow(radius, 2);
+    const areaInSquareKilometers = areaInSquareMeters / 1e6;
+    setArea(
+      `${areaInSquareMeters.toFixed(0)} m² | ${areaInSquareKilometers.toFixed(2)} km²`
+    );
+
+    const radiusInKilometers = radius / 1000;
+    setFormattedRadius(
+      `${radius.toFixed(0)} m | ${radiusInKilometers.toFixed(2)} km`
+    );
+  };
+
+  useEffect(() => {
+    if (radius > 0 && map) {
+      calculateAreaAndRadius(radius);
+    }
+  }, [radius, map]);
 
   return (
     <div className="mx-auto max-w-7xl p-4">
@@ -111,7 +137,7 @@ const MainPage = () => {
           <CircleMap center={center} radius={drawMode ? 0 : radius} />
         )}
       </GoogleMapContainer>
-      <Result area={null} perimeter={null} radius={null} />
+      <Result area={area} perimeter={null} radius={formattedRadius} />
     </div>
   );
 };
