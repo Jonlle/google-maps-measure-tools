@@ -1,5 +1,5 @@
 // src/components/MainPage.tsx
-import { ChangeEvent, useCallback, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
 import Result from "./Result";
 import { radiusOptions, RadiusOption, calculateCircleArea, calculateCirclePerimeter } from "../utils/circleUtils";
@@ -42,6 +42,18 @@ const MainPage: React.FC = () => {
       setDrawMode(false);
       setRadiusSelected(0);
       setRadius(0);
+    }
+  }, [circle]);
+
+  useEffect(() => {
+    if (circle) {
+      const circleRadius = circle.getRadius();
+      setRadius(circleRadius);
+      setArea(calculateCircleArea(circleRadius));
+      setPerimeter(calculateCirclePerimeter(circleRadius));
+    } else {
+      setArea(null);
+      setPerimeter(null);
     }
   }, [circle]);
 
