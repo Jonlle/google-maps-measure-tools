@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   GoogleMap,
   useLoadScript,
@@ -6,6 +6,7 @@ import {
   DrawingManager,
 } from "@react-google-maps/api";
 import { circleOptions } from "../utils/circleUtils";
+import useMapFitBounds from "../hooks/useMapFitBounds";
 
 interface GoogleMapContainerProps {
   mode: "area" | "radius" | null;
@@ -42,6 +43,7 @@ const GoogleMapContainer = ({
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(
     null,
   );
+  const circleRef = useRef<google.maps.Circle | null>(null);
 
   const onMapLoad = (map: google.maps.Map) => {
     googleMapRef.current = map;
@@ -53,6 +55,17 @@ const GoogleMapContainer = ({
     drawingManagerRef.current = drawingManager;
   };
 
+  const handleCircleComplete = useCallback(
+    (circle: google.maps.Circle) => {
+      circleRef.current = circle;
+      if (drawingManagerRef.current) {
+        drawingManagerRef.current.setDrawingMode(null);
+      }
+      onCircleComplete(circle);
+    },
+    [onCircleComplete],
+  );
+
   useEffect(() => {
     if (googleMapRef.current && radiusSelected > 0 && mode === "radius") {
       const center = googleMapRef.current.getCenter();
@@ -63,13 +76,12 @@ const GoogleMapContainer = ({
           center: center.toJSON(),
           radius: radiusSelected,
         });
-        onCircleComplete(newCircle);
-        if (drawingManagerRef.current) {
-          drawingManagerRef.current.setDrawingMode(null); // Desactivar el modo de dibujo
-        }
+        handleCircleComplete(newCircle);
       }
     }
-  }, [radiusSelected, mode, onCircleComplete]);
+  }, [radiusSelected, mode, onCircleComplete, handleCircleComplete]);
+
+  useMapFitBounds(googleMapRef.current, circleRef.current);
 
   const getDrawingMode = () => {
     if (mode === "radius" && drawMode)
@@ -92,12 +104,7 @@ const GoogleMapContainer = ({
           }}
           onLoad={onDrawingManagerLoad}
           drawingMode={getDrawingMode()}
-          onCircleComplete={(circle: google.maps.Circle) => {
-            onCircleComplete(circle);
-            if (drawingManagerRef.current) {
-              drawingManagerRef.current.setDrawingMode(null); // Desactivar el modo de dibujo
-            }
-          }}
+          onCircleComplete={handleCircleComplete}
         />
       </GoogleMap>
     </div>
