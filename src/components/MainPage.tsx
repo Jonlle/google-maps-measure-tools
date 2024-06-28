@@ -1,196 +1,40 @@
 // src/components/MainPage.tsx
-import { useState, useEffect, useRef } from "react";
+import { ChangeEvent, useCallback, useState } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
-import CircleMap from "./CircleMap";
 import Result from "./Result";
-import { radiusOptions, RadiusOptions } from "../utils/radiusOptions";
+import { radiusOptions, RadiusOption } from "../utils/radiusOptions";
 
 type Mode = "area" | "radius" | null;
 
 const MainPage: React.FC = () => {
   const [mode, setMode] = useState<Mode>(null);
-  const [radius, setRadius] = useState<number>(0);
   const [drawMode, setDrawMode] = useState<boolean>(false);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(null);
-  const [area, setArea] = useState<string | null>(null);
-  const [formattedRadius, setFormattedRadius] = useState<string | null>(null);
   const [circle, setCircle] = useState<google.maps.Circle | null>(null);
-  const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(
-    null,
+  const [area, setArea] = useState<number | null>(null);
+  const [radius, setRadius] = useState<number | null>(0);
+  const [perimeter, setPerimeter] = useState<number | null>(null);
+  const [radiusSelected, setRadiusSelected] = useState<number>(0);
+
+  const handleModeChange = (newMode: Mode) => setMode(newMode);
+
+  const handleSelectRadiusChange = useCallback(
+    ({ target: { value: newRadius } }: ChangeEvent<HTMLSelectElement>) => {
+      setRadius(Number(newRadius));
+      setRadiusSelected(Number(newRadius));
+    },
+    [],
   );
 
-  const handleModeChange = (newMode: Mode) => {
-    setMode(newMode);
-    setRadius(0);
-    setDrawMode(false);
-    setCenter(null);
-    setArea(null);
-    setFormattedRadius(null);
-    if (circle) {
-      circle.setMap(null);
-      setCircle(null);
-    }
-  };
+  const handleDrawClick = () => setDrawMode(true);
 
-  const handleRadiusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRadius = Number(e.target.value);
-    setRadius(newRadius);
-    if (map) {
-      const center = {
-        lat: map.getCenter()!.lat(),
-        lng: map.getCenter()!.lng(),
-      };
-      setCenter(center);
-      calculateAreaAndRadius(newRadius);
-      fitMapToCircle(center, newRadius);
-      if (!circle) {
-        drawCircle(center, newRadius);
-      }
-    }
-  };
+  const handleCancelDrawClick = () => setDrawMode(false);
 
-  const handleDrawClick = () => {
-    if (mode === "radius" && !circle) {
-      setDrawMode(true);
-      if (drawingManagerRef.current && map) {
-        drawingManagerRef.current.setDrawingMode(
-          google.maps.drawing.OverlayType.CIRCLE,
-        );
-      }
-    }
-  };
-
-  const handleCancelDrawClick = () => {
-    setDrawMode(false);
-    if (drawingManagerRef.current) {
-      drawingManagerRef.current.setDrawingMode(null);
-    }
-  };
-
-  const handleClearCircleClick = () => {
+  const handleClearCircleClick = useCallback(() => {
     if (circle) {
       circle.setMap(null);
       setCircle(null);
       setDrawMode(false);
       setRadius(0);
-      setCenter(null);
-      setArea(null);
-      setFormattedRadius(null);
-    }
-  };
-
-  const handleMapLoad = (map: google.maps.Map) => {
-    setMap(map);
-
-    const drawingManager = new google.maps.drawing.DrawingManager({
-      drawingMode: null,
-      drawingControl: false,
-      circleOptions: {
-        fillColor: "#FF0000",
-        fillOpacity: 0.35,
-        strokeWeight: 2,
-        clickable: false,
-        editable: true,
-        zIndex: 1,
-      },
-    });
-
-    drawingManager.setMap(map);
-    drawingManagerRef.current = drawingManager;
-
-    google.maps.event.addListener(
-      drawingManager,
-      "circlecomplete",
-      (circle: google.maps.Circle) => {
-        setDrawMode(false);
-        drawingManager.setDrawingMode(null);
-
-        setCircle(circle);
-        const radius = circle.getRadius();
-        const center = circle.getCenter();
-
-        setRadius(radius);
-        setCenter({ lat: center!.lat(), lng: center!.lng() });
-        calculateAreaAndRadius(radius);
-
-        google.maps.event.addListener(circle, "radius_changed", () => {
-          const newRadius = circle.getRadius();
-          setRadius(newRadius);
-          calculateAreaAndRadius(newRadius);
-        });
-
-        google.maps.event.addListener(circle, "center_changed", () => {
-          const newCenter = circle.getCenter();
-          setCenter({ lat: newCenter!.lat(), lng: newCenter!.lng() });
-        });
-      },
-    );
-  };
-
-  const calculateAreaAndRadius = (radius: number) => {
-    const areaInSquareMeters = Math.PI * Math.pow(radius, 2);
-    const areaInSquareKilometers = areaInSquareMeters / 1e6;
-    setArea(
-      `${areaInSquareMeters.toFixed(0)} m² | ${areaInSquareKilometers.toFixed(2)} km²`,
-    );
-
-    const radiusInKilometers = radius / 1000;
-    setFormattedRadius(
-      `${radius.toFixed(0)} m | ${radiusInKilometers.toFixed(2)} km`,
-    );
-  };
-
-  const fitMapToCircle = (
-    center: google.maps.LatLngLiteral,
-    radius: number,
-  ) => {
-    if (map) {
-      const bounds = new google.maps.LatLngBounds();
-      const start = google.maps.geometry.spherical.computeOffset(
-        center,
-        radius * 1.1,
-        225,
-      );
-      const end = google.maps.geometry.spherical.computeOffset(
-        center,
-        radius * 1.1,
-        45,
-      );
-      bounds.extend(start);
-      bounds.extend(end);
-      map.fitBounds(bounds);
-    }
-  };
-
-  const drawCircle = (
-    center: google.maps.LatLngLiteral,
-    radius: number,
-  ) => {
-    const circleOptions: google.maps.CircleOptions = {
-      strokeColor: "#FF0000",
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: "#FF0000",
-      fillOpacity: 0.35,
-      map,
-      center,
-      radius,
-    };
-
-    const newCircle = new google.maps.Circle(circleOptions);
-    setCircle(newCircle);
-  };
-
-  useEffect(() => {
-    if (radius > 0 && map) {
-      calculateAreaAndRadius(radius);
-    }
-  }, [radius, map]);
-
-  useEffect(() => {
-    if (circle) {
-      setDrawMode(false);
     }
   }, [circle]);
 
@@ -220,14 +64,14 @@ const MainPage: React.FC = () => {
           <div className="select">
             <select
               className="select__field"
-              value={radius}
-              onChange={handleRadiusChange}
+              value={radiusSelected}
+              onChange={handleSelectRadiusChange}
               disabled={drawMode || !!circle}
             >
               <option value="0" className="select__option" disabled>
                 Selecciona un radio
               </option>
-              {radiusOptions.map((option: RadiusOptions) => (
+              {radiusOptions.map((option: RadiusOption) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -261,15 +105,8 @@ const MainPage: React.FC = () => {
         </div>
       )}
 
-      <GoogleMapContainer mode={mode} onMapLoad={handleMapLoad}>
-        {mode === "radius" && !circle && map && (
-          <CircleMap center={center} radius={radius} />
-        )}
-        {mode === "radius" && circle && (
-          <CircleMap center={center} radius={radius} />
-        )}
-      </GoogleMapContainer>
-      <Result area={area} perimeter={null} radius={formattedRadius} />
+      <GoogleMapContainer mode={mode} />
+      <Result area={area} perimeter={perimeter} radius={radius} />
     </div>
   );
 };

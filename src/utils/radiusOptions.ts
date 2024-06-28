@@ -1,10 +1,10 @@
 
-export interface RadiusOptions {
+export interface RadiusOption {
   value: number;
   label: string;
 }
 
-export const radiusOptions: RadiusOptions[] = [
+export const radiusOptions: RadiusOption[] = [
   { value: 0, label: "Selecciona un radio" },
   { value: 50, label: "50 m" },
   { value: 100, label: "100 m" },
