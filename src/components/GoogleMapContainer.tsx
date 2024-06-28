@@ -1,18 +1,17 @@
-// src/components/GoogleMapContainer.tsx
+import { useEffect, useRef } from "react";
 import {
   GoogleMap,
   useLoadScript,
   Libraries,
   DrawingManager,
 } from "@react-google-maps/api";
-import { useState, useEffect } from "react";
 import { circleOptions } from "../utils/circleUtils";
 
 interface GoogleMapContainerProps {
   mode: "area" | "radius" | null;
   drawMode: boolean;
   radiusSelected: number;
-  onCircleComplete: (circle: google.maps.Circle) => void;
+  onCircleComplete: (circle: google.maps.Circle | null) => void;
 }
 
 const libraries: Libraries = ["geometry", "drawing"];
@@ -29,14 +28,6 @@ const googleMapProps = {
   },
 };
 
-const polygonOptions = {
-  strokeColor: "#FF0000",
-  strokeOpacity: 0.8,
-  strokeWeight: 2,
-  fillColor: "#FF0000",
-  fillOpacity: 0.35,
-};
-
 const GoogleMapContainer = ({
   mode,
   drawMode,
@@ -47,34 +38,38 @@ const GoogleMapContainer = ({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
     libraries,
   });
-  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const googleMapRef = useRef<google.maps.Map | null>(null);
+  const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(
+    null,
+  );
 
   const onMapLoad = (map: google.maps.Map) => {
-    setMap(map);
-    console.log("map", map);
-    console.log("mode", mode);
+    googleMapRef.current = map;
   };
 
-  const onLoad = (drawingManager: google.maps.drawing.DrawingManager) => {
-    console.log(drawingManager);
-  };
-
-  const handlePolygonComplete = (polygon: google.maps.Polygon) => {
-    console.log("handlePolygonComplete", polygon);
+  const onDrawingManagerLoad = (
+    drawingManager: google.maps.drawing.DrawingManager,
+  ) => {
+    drawingManagerRef.current = drawingManager;
   };
 
   useEffect(() => {
-    if (map && radiusSelected > 0) {
-      const center = map.getCenter();
-      const circle = new google.maps.Circle({
-        ...circleOptions,
-        map,
-        center: center!,
-        radius: radiusSelected,
-      });
-      onCircleComplete(circle);
+    if (googleMapRef.current && radiusSelected > 0 && mode === "radius") {
+      const center = googleMapRef.current.getCenter();
+      if (center) {
+        const newCircle = new google.maps.Circle({
+          ...circleOptions,
+          map: googleMapRef.current,
+          center: center.toJSON(),
+          radius: radiusSelected,
+        });
+        onCircleComplete(newCircle);
+        if (drawingManagerRef.current) {
+          drawingManagerRef.current.setDrawingMode(null); // Desactivar el modo de dibujo
+        }
+      }
     }
-  }, [radiusSelected, map, onCircleComplete]);
+  }, [radiusSelected, mode, onCircleComplete]);
 
   const getDrawingMode = () => {
     if (mode === "radius" && drawMode)
@@ -93,13 +88,16 @@ const GoogleMapContainer = ({
           options={{
             circleOptions: circleOptions,
             drawingControl: false,
-            map: map,
-            polygonOptions: polygonOptions,
+            map: googleMapRef.current,
           }}
+          onLoad={onDrawingManagerLoad}
           drawingMode={getDrawingMode()}
-          onCircleComplete={onCircleComplete}
-          onPolygonComplete={handlePolygonComplete}
-          onLoad={onLoad}
+          onCircleComplete={(circle: google.maps.Circle) => {
+            onCircleComplete(circle);
+            if (drawingManagerRef.current) {
+              drawingManagerRef.current.setDrawingMode(null); // Desactivar el modo de dibujo
+            }
+          }}
         />
       </GoogleMap>
     </div>

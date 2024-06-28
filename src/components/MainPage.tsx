@@ -1,8 +1,12 @@
-// src/components/MainPage.tsx
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
 import Result from "./Result";
-import { radiusOptions, RadiusOption, calculateCircleArea, calculateCirclePerimeter } from "../utils/circleUtils";
+import {
+  radiusOptions,
+  RadiusOption,
+  calculateCircleArea,
+  calculateCirclePerimeter,
+} from "../utils/circleUtils";
 
 type Mode = "area" | "radius" | null;
 
@@ -20,13 +24,13 @@ const MainPage: React.FC = () => {
     setRadiusSelected(0);
     setCircle(null);
     setRadius(null);
+    setDrawMode(false);
   };
 
   const handleSelectRadiusChange = useCallback(
     ({ target: { value: newRadius } }: ChangeEvent<HTMLSelectElement>) => {
-      setRadius(Number(newRadius));
       setRadiusSelected(Number(newRadius));
-      setDrawMode(false); // Se desactiva el modo de dibujo
+      setDrawMode(false);
     },
     [],
   );
@@ -44,6 +48,14 @@ const MainPage: React.FC = () => {
       setRadius(0);
     }
   }, [circle]);
+
+  const handleCircleComplete = useCallback(
+    (newCircle: google.maps.Circle | null) => {
+      setCircle(newCircle);
+      setDrawMode(false);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (circle) {
@@ -63,14 +75,18 @@ const MainPage: React.FC = () => {
       <p className="mb-4 text-lg">Selecciona una opción para calcular:</p>
       <div className="mb-4 flex justify-start space-x-2">
         <button
-          className={`button button--primary ${mode === "area" ? "button--active" : ""}`}
+          className={`button button--primary ${
+            mode === "area" ? "button--active" : ""
+          }`}
           onClick={() => handleModeChange("area")}
           disabled={mode === "area"}
         >
           Área
         </button>
         <button
-          className={`button button--primary ${mode === "radius" ? "button--active" : ""}`}
+          className={`button button--primary ${
+            mode === "radius" ? "button--active" : ""
+          }`}
           onClick={() => handleModeChange("radius")}
           disabled={mode === "radius"}
         >
@@ -95,7 +111,6 @@ const MainPage: React.FC = () => {
                   {option.label}
                 </option>
               ))}
-              )
             </select>
           </div>
           <button
@@ -128,7 +143,7 @@ const MainPage: React.FC = () => {
         mode={mode}
         drawMode={drawMode}
         radiusSelected={radiusSelected}
-        onCircleComplete={setCircle}
+        onCircleComplete={handleCircleComplete}
       />
       <Result area={area} perimeter={perimeter} radius={radius} />
     </div>
