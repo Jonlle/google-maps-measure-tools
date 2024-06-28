@@ -15,12 +15,18 @@ const MainPage: React.FC = () => {
   const [perimeter, setPerimeter] = useState<number | null>(null);
   const [radiusSelected, setRadiusSelected] = useState<number>(0);
 
-  const handleModeChange = (newMode: Mode) => setMode(newMode);
+  const handleModeChange = (newMode: Mode) => {
+    setMode(newMode);
+    setRadiusSelected(0);
+    setCircle(null);
+    setRadius(null);
+  };
 
   const handleSelectRadiusChange = useCallback(
     ({ target: { value: newRadius } }: ChangeEvent<HTMLSelectElement>) => {
       setRadius(Number(newRadius));
       setRadiusSelected(Number(newRadius));
+      setDrawMode(false); // Se desactiva el modo de dibujo
     },
     [],
   );
@@ -34,6 +40,7 @@ const MainPage: React.FC = () => {
       circle.setMap(null);
       setCircle(null);
       setDrawMode(false);
+      setRadiusSelected(0);
       setRadius(0);
     }
   }, [circle]);
@@ -105,7 +112,12 @@ const MainPage: React.FC = () => {
         </div>
       )}
 
-      <GoogleMapContainer mode={mode} />
+      <GoogleMapContainer
+        mode={mode}
+        drawMode={drawMode}
+        radiusSelected={radiusSelected}
+        onCircleComplete={setCircle}
+      />
       <Result area={area} perimeter={perimeter} radius={radius} />
     </div>
   );
