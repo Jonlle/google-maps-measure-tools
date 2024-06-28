@@ -2,7 +2,7 @@
 import { ChangeEvent, useCallback, useState } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
 import Result from "./Result";
-import { radiusOptions, RadiusOption } from "../utils/radiusOptions";
+import { radiusOptions, RadiusOption, calculateCircleArea, calculateCirclePerimeter } from "../utils/circleUtils";
 
 type Mode = "area" | "radius" | null;
 
