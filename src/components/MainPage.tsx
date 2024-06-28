@@ -1,73 +1,24 @@
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import GoogleMapContainer from "./GoogleMapContainer";
 import Result from "./Result";
-import {
-  radiusOptions,
-  RadiusOption,
-  calculateCircleArea,
-  calculateCirclePerimeter,
-} from "../utils/circleUtils";
-
-type Mode = "area" | "radius" | null;
+import useMapControls from "../hooks/useMapControls";
+import { radiusOptions, RadiusOption } from "../utils/circleUtils";
 
 const MainPage: React.FC = () => {
-  const [mode, setMode] = useState<Mode>(null);
-  const [drawMode, setDrawMode] = useState<boolean>(false);
-  const [circle, setCircle] = useState<google.maps.Circle | null>(null);
-  const [area, setArea] = useState<number | null>(null);
-  const [radius, setRadius] = useState<number | null>(0);
-  const [perimeter, setPerimeter] = useState<number | null>(null);
-  const [radiusSelected, setRadiusSelected] = useState<number>(0);
-
-  const handleModeChange = (newMode: Mode) => {
-    setMode(newMode);
-    setRadiusSelected(0);
-    setCircle(null);
-    setRadius(null);
-    setDrawMode(false);
-  };
-
-  const handleSelectRadiusChange = useCallback(
-    ({ target: { value: newRadius } }: ChangeEvent<HTMLSelectElement>) => {
-      setRadiusSelected(Number(newRadius));
-      setDrawMode(false);
-    },
-    [],
-  );
-
-  const handleDrawClick = () => setDrawMode(true);
-
-  const handleCancelDrawClick = () => setDrawMode(false);
-
-  const handleClearCircleClick = useCallback(() => {
-    if (circle) {
-      circle.setMap(null);
-      setCircle(null);
-      setDrawMode(false);
-      setRadiusSelected(0);
-      setRadius(0);
-    }
-  }, [circle]);
-
-  const handleCircleComplete = useCallback(
-    (newCircle: google.maps.Circle | null) => {
-      setCircle(newCircle);
-      setDrawMode(false);
-    },
-    [],
-  );
-
-  useEffect(() => {
-    if (circle) {
-      const circleRadius = circle.getRadius();
-      setRadius(circleRadius);
-      setArea(calculateCircleArea(circleRadius));
-      setPerimeter(calculateCirclePerimeter(circleRadius));
-    } else {
-      setArea(null);
-      setPerimeter(null);
-    }
-  }, [circle]);
+  const {
+    mode,
+    drawMode,
+    circle,
+    radiusSelected,
+    radius,
+    area,
+    perimeter,
+    handleModeChange,
+    handleSelectRadiusChange,
+    handleDrawClick,
+    handleCancelDrawClick,
+    handleClearCircleClick,
+    handleCircleComplete,
+  } = useMapControls({ initialMode: null, initialRadiusSelected: 0 });
 
   return (
     <div className="mx-auto max-w-7xl p-4">
