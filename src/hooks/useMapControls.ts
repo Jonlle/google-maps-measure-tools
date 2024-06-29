@@ -54,8 +54,16 @@ const useMapControls = ({
   }, []);
 
   const handleCancelDrawClick = useCallback(() => {
+    if (polygon) {
+      const path = polygon.getPath();
+      if (path.getLength() > 2) {
+        path.push(path.getAt(0));
+        polygon.setPath(path);
+        setPolygon(polygon);
+      }
+    }
     setDrawMode(false);
-  }, []);
+  }, [polygon]);
 
   const handleClearCircleClick = useCallback(() => {
     if (circle) {
@@ -67,11 +75,27 @@ const useMapControls = ({
     }
   }, [circle]);
 
+  const handleClearLastPointClick = useCallback(() => {
+    if (polygon) {
+      const path = polygon.getPath();
+      if (path.getLength() > 0) {
+        path.pop();
+        if (path.getLength() === 0) {
+          polygon.setMap(null);
+          setPolygon(null);
+          setDrawMode(false);
+        } else {
+          polygon.setPath(path);
+          setPolygon(polygon);
+        }
+      }
+    }
+  }, [polygon]);
+
   const handleClearPolygonClick = useCallback(() => {
     if (polygon) {
       polygon.setMap(null);
       setPolygon(null);
-      setDrawMode(false);
     }
   }, [polygon]);
 
@@ -98,9 +122,26 @@ const useMapControls = ({
       setArea(calculateCircleArea(circleRadius));
       setPerimeter(calculateCirclePerimeter(circleRadius));
     } else if (polygon) {
-      const path = polygon.getPaths();
-      setArea(calculatePolygonArea(path));
-      setPerimeter(calculatePolygonPerimeter(path));
+      const paths = polygon.getPaths();
+      let totalPoints = 0;
+      paths.forEach((path) => (totalPoints += path.getLength()));
+      if (totalPoints > 2) {
+        setArea(calculatePolygonArea(paths));
+        setPerimeter(calculatePolygonPerimeter(paths));
+      } else if (totalPoints === 2) {
+        const path = paths.getAt(0);
+        const point1 = path.getAt(0);
+        const point2 = path.getAt(1);
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          point1,
+          point2
+        );
+        setPerimeter(distance);
+        setArea(null);
+      } else {
+        setArea(null);
+        setPerimeter(null);
+      }
     } else {
       setArea(null);
       setPerimeter(null);
@@ -121,6 +162,7 @@ const useMapControls = ({
     handleDrawClick,
     handleCancelDrawClick,
     handleClearCircleClick,
+    handleClearLastPointClick,
     handleClearPolygonClick,
     handleCircleComplete,
     handlePolygonComplete,

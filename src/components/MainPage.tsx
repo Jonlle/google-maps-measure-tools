@@ -18,6 +18,7 @@ const MainPage = () => {
     handleDrawClick,
     handleCancelDrawClick,
     handleClearCircleClick,
+    handleClearLastPointClick,
     handleClearPolygonClick,
     handleCircleComplete,
     handlePolygonComplete,
@@ -49,31 +50,40 @@ const MainPage = () => {
       </div>
 
       {mode === "area" && (
-        <div className="mb-4 flex justify-center">
-          {polygon ? (
+        <div className="mb-4 flex justify-start space-x-2">
+          <button
+            className="button button--secondary"
+            onClick={handleDrawClick}
+            disabled={drawMode || !!polygon}
+          >
+            Dibujar un polígono
+          </button>
+          {drawMode && (
             <button
               className="button button--secondary"
-              onClick={handleClearPolygonClick}
+              onClick={handleCancelDrawClick}
             >
-              Limpiar
+              Cancelar dibujo
             </button>
-          ) : (
+          )}
+          {polygon && (
             <>
               <button
                 className="button button--secondary"
-                onClick={handleDrawClick}
-                disabled={drawMode}
+                onClick={handleClearLastPointClick}
+                disabled={
+                  !polygon.getPath() || polygon.getPath().getLength() === 0
+                }
               >
-                Dibujar
+                Limpiar último punto
               </button>
-              {drawMode && (
-                <button
-                  className="button button--secondary"
-                  onClick={handleCancelDrawClick}
-                >
-                  Cancelar
-                </button>
-              )}
+              <button
+                className="button button--secondary"
+                onClick={handleClearPolygonClick}
+                disabled={!polygon}
+              >
+                Limpiar todo
+              </button>
             </>
           )}
         </div>
@@ -110,7 +120,7 @@ const MainPage = () => {
               className="button button--secondary"
               onClick={handleCancelDrawClick}
             >
-              Cancelar Dibujo
+              Cancelar dibujo
             </button>
           )}
           {circle && (
@@ -118,7 +128,7 @@ const MainPage = () => {
               className="button button--secondary"
               onClick={handleClearCircleClick}
             >
-              Limpiar Círculo
+              Limpiar círculo
             </button>
           )}
         </div>
