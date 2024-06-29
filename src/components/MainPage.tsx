@@ -3,11 +3,12 @@ import Result from "./Result";
 import useMapControls from "../hooks/useMapControls";
 import { radiusOptions, RadiusOption } from "../utils/circleUtils";
 
-const MainPage: React.FC = () => {
+const MainPage = () => {
   const {
     mode,
     drawMode,
     circle,
+    polygon,
     radiusSelected,
     radius,
     area,
@@ -17,7 +18,9 @@ const MainPage: React.FC = () => {
     handleDrawClick,
     handleCancelDrawClick,
     handleClearCircleClick,
+    handleClearPolygonClick,
     handleCircleComplete,
+    handlePolygonComplete,
   } = useMapControls({ initialMode: null, initialRadiusSelected: 0 });
 
   return (
@@ -44,6 +47,37 @@ const MainPage: React.FC = () => {
           Radio
         </button>
       </div>
+
+      {mode === "area" && (
+        <div className="mb-4 flex justify-center">
+          {polygon ? (
+            <button
+              className="button button--secondary"
+              onClick={handleClearPolygonClick}
+            >
+              Limpiar
+            </button>
+          ) : (
+            <>
+              <button
+                className="button button--secondary"
+                onClick={handleDrawClick}
+                disabled={drawMode}
+              >
+                Dibujar
+              </button>
+              {drawMode && (
+                <button
+                  className="button button--secondary"
+                  onClick={handleCancelDrawClick}
+                >
+                  Cancelar
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {mode === "radius" && (
         <div className="mb-4 flex space-x-2">
@@ -95,6 +129,7 @@ const MainPage: React.FC = () => {
         drawMode={drawMode}
         radiusSelected={radiusSelected}
         onCircleComplete={handleCircleComplete}
+        onPolygonComplete={handlePolygonComplete}
       />
       <Result area={area} perimeter={perimeter} radius={radius} />
     </div>
