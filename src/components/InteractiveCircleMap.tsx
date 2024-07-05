@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import {
   GoogleMap,
   useLoadScript,
@@ -12,6 +12,7 @@ import useMapFitBounds from "../hooks/useMapFitBounds";
 interface InteractiveCircleMapProps {
   drawMode: boolean;
   radiusSelected: number;
+  waitingForCenter: boolean;
   onCircleComplete: (circle: google.maps.Circle | null) => void;
 }
 
@@ -32,6 +33,7 @@ const googleMapProps = {
 const InteractiveCircleMap = ({
   drawMode,
   radiusSelected,
+  waitingForCenter,
   onCircleComplete,
 }: InteractiveCircleMapProps) => {
   const { isLoaded, loadError } = useLoadScript({
@@ -65,20 +67,20 @@ const InteractiveCircleMap = ({
     [onCircleComplete],
   );
 
-  useEffect(() => {
-    if (googleMapRef.current && radiusSelected > 0) {
-      const center = googleMapRef.current.getCenter();
-      if (center) {
+  const handleMapClick = useCallback(
+    (e: google.maps.MapMouseEvent) => {
+      if (waitingForCenter && e.latLng && googleMapRef.current) {
         const newCircle = new google.maps.Circle({
           ...circleOptions,
           map: googleMapRef.current,
-          center: center.toJSON(),
+          center: e.latLng,
           radius: radiusSelected,
         });
         handleCircleComplete(newCircle);
       }
-    }
-  }, [radiusSelected, onCircleComplete, handleCircleComplete]);
+    },
+    [waitingForCenter, radiusSelected, handleCircleComplete],
+  );
 
   useMapFitBounds(googleMapRef.current, circleRef.current);
 
@@ -87,11 +89,14 @@ const InteractiveCircleMap = ({
 
   return (
     <div>
-      <GoogleMap {...googleMapProps} onLoad={onMapLoad}>
+      <GoogleMap
+        {...googleMapProps}
+        onLoad={onMapLoad}
+        onClick={handleMapClick}
+      >
         <DrawingManager
           options={{
             circleOptions: circleOptions,
-            polygonOptions: polygonOptions,
             drawingControl: false,
             map: googleMapRef.current,
           }}
