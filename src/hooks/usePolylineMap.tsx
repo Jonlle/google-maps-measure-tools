@@ -129,21 +129,91 @@ export const usePolylineMap = () => {
     [],
   );
 
-  const handleCurrentPolylineClick = useCallback(
-    (event: google.maps.MapMouseEvent) => {
-      console.log("Current Polyline Loaded", event);
-    },
-    [],
-  );
-
   const handleCurrentPolylineMouseOver = useCallback(
     (event: google.maps.MapMouseEvent) => {
+      const { latLng } = event;
       const { clientX, clientY } = event.domEvent as MouseEvent;
 
+      if (!latLng) {
+        return;
+      }
+
+      const closestDistance = 10;
+
+      let tooltipText = "";
+
+      const nearPoint = currentPolyline.findIndex((point) => {
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          latLng,
+          point,
+        );
+        return distance < closestDistance;
+      });
+
+      if (nearPoint !== -1) {
+        tooltipText =
+          nearPoint === 0
+            ? "Haz clic para terminar el polígono, arrastra para cambiar"
+            : "Arrastra para cambiar, haz clic para eliminar";
+      } else {
+        currentPolyline.some((point, index) => {
+          if (index === 0) return false;
+
+          const previousPoint = currentPolyline[index - 1];
+          const midpoint = new google.maps.LatLng(
+            (point.lat() + previousPoint.lat()) / 2,
+            (point.lng() + previousPoint.lng()) / 2,
+          );
+
+          const distance =
+            google.maps.geometry.spherical.computeDistanceBetween(
+              latLng,
+              midpoint,
+            );
+
+          if (distance < closestDistance) {
+            tooltipText = "Arrastra para cambiar";
+            return true;
+          }
+          return false;
+        });
+      }
+
       setTooltipPosition({ x: clientX, y: clientY });
-      setTooltipContent("Arrastra para cambiar, haz clic para eliminar");
+      setTooltipContent(tooltipText);
     },
-    [],
+    [currentPolyline],
+  );
+
+  const handleCurrentPolylineClick = useCallback(
+    (event: google.maps.MapMouseEvent) => {
+      const { latLng } = event;
+
+      // Encuentra el punto más cercano en currentPolyline al clicado
+      let closestPointIndex = -1;
+      let closestDistance = 10; // Inicializa con el radio de clic
+
+      currentPolyline.forEach((point, index) => {
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          latLng,
+          point,
+        );
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestPointIndex = index;
+        }
+      });
+
+      // Maneja la lógica del clic basada en el punto más cercano o el punto medio del segmento
+      if (closestPointIndex !== -1) {
+        // Lógica para manejar el clic en el punto más cercano
+        console.log("Clic en el punto:", currentPolyline[closestPointIndex]);
+      } else {
+        // Lógica para manejar el clic en el punto medio del segmento (si es necesario)
+        console.log("Clic en el punto medio del segmento");
+      }
+    },
+    [currentPolyline],
   );
 
   const handleCurrentPolylineMouseOut = useCallback(() => {
