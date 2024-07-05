@@ -17,6 +17,7 @@ const useCircleMap = ({ initialRadiusSelected }: UseCircleMapProps) => {
   const [radius, setRadius] = useState<number | null>(null);
   const [area, setArea] = useState<number | null>(null);
   const [perimeter, setPerimeter] = useState<number | null>(null);
+  const [waitingForCenter, setWaitingForCenter] = useState<boolean>(false);
 
   const handleSelectRadiusChange = useCallback(
     ({
@@ -24,12 +25,14 @@ const useCircleMap = ({ initialRadiusSelected }: UseCircleMapProps) => {
     }: React.ChangeEvent<HTMLSelectElement>) => {
       setRadiusSelected(Number(newRadius));
       setDrawMode(false);
+      setWaitingForCenter(true); // Set waiting for center to true
     },
     [],
   );
 
   const handleDrawClick = useCallback(() => {
     setDrawMode(true);
+    setWaitingForCenter(false); // Ensure waitingForCenter is false when draw mode is initiated
   }, []);
 
   const handleClearCircleClick = useCallback(() => {
@@ -39,11 +42,13 @@ const useCircleMap = ({ initialRadiusSelected }: UseCircleMapProps) => {
       setDrawMode(false);
       setRadiusSelected(0);
       setRadius(0);
+      setWaitingForCenter(false); // Reset waitingForCenter when clearing the circle
     }
   }, [circle]);
 
   const handleCancelDrawClick = useCallback(() => {
     setDrawMode(false);
+    setWaitingForCenter(false); // Ensure waitingForCenter is false when drawing is cancelled
   }, []);
 
   const handleCircleComplete = useCallback(
@@ -73,6 +78,7 @@ const useCircleMap = ({ initialRadiusSelected }: UseCircleMapProps) => {
     radius,
     area,
     perimeter,
+    waitingForCenter,
     handleSelectRadiusChange,
     handleDrawClick,
     handleCancelDrawClick,
