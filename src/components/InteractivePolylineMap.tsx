@@ -1,28 +1,7 @@
 import React, { useCallback } from "react";
-import {
-  GoogleMap,
-  Libraries,
-  Polyline,
-  useLoadScript,
-} from "@react-google-maps/api";
+import { GoogleMap, Polyline } from "@react-google-maps/api";
 import CustomTooltip from "./CustomTooltip";
-
-const libraries: Libraries = ["geometry", "drawing", "marker"];
-
-const mapContainerStyle = {
-  width: "100%",
-  height: "60vh",
-};
-
-const centerGMap = {
-  lat: 40.2085,
-  lng: -3.713,
-};
-
-const options: google.maps.MapOptions = {
-  disableDefaultUI: true,
-  zoomControl: true,
-};
+import { googleMapProps } from "../utils/googleMapProps";
 
 interface InteractivePolylineMapProps {
   isDrawingMode: boolean;
@@ -53,11 +32,6 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
   handleCurrentPolylineMouseOver,
   handleCurrentPolylineMouseOut,
 }) => {
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
-    libraries,
-  });
-
   const handlePolylineClick = useCallback(
     (
       event: google.maps.MapMouseEvent,
@@ -80,16 +54,10 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
     [],
   );
 
-  if (loadError) return <div>Error loading maps</div>;
-  if (!isLoaded) return <div>Loading Maps...</div>;
-
   return (
     <>
       <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        center={centerGMap}
-        zoom={10}
-        options={options}
+        {...googleMapProps}
         onLoad={handleMapLoad}
         onClick={handleMapClick}
       >

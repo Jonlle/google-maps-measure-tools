@@ -1,12 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
-import {
-  GoogleMap,
-  useLoadScript,
-  Libraries,
-  DrawingManager,
-} from "@react-google-maps/api";
+import { GoogleMap, DrawingManager } from "@react-google-maps/api";
 import { circleOptions } from "../utils/circleUtils";
 import useMapFitBounds from "../hooks/useMapFitBounds";
+import { googleMapProps } from "../utils/googleMapProps";
 
 interface InteractiveCircleMapProps {
   drawMode: boolean;
@@ -16,20 +12,6 @@ interface InteractiveCircleMapProps {
   onCircleEdit: (circle: google.maps.Circle) => void;
 }
 
-const libraries: Libraries = ["geometry", "drawing"];
-
-const googleMapProps = {
-  mapContainerStyle: {
-    width: "100%",
-    height: "60vh",
-  },
-  zoom: 8,
-  center: {
-    lat: 40.2085,
-    lng: -3.713,
-  },
-};
-
 const InteractiveCircleMap = ({
   drawMode,
   radiusSelected,
@@ -37,10 +19,6 @@ const InteractiveCircleMap = ({
   onCircleComplete,
   onCircleEdit,
 }: InteractiveCircleMapProps) => {
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
-    libraries,
-  });
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const drawingManagerRef = useRef<google.maps.drawing.DrawingManager | null>(
     null,
@@ -106,9 +84,6 @@ const InteractiveCircleMap = ({
   }, [waitingForCenter]);
 
   useMapFitBounds(googleMapRef.current, circleRef.current);
-
-  if (loadError) return <div>Error al cargar el mapa</div>;
-  if (!isLoaded) return <div>Cargando...</div>;
 
   return (
     <div>

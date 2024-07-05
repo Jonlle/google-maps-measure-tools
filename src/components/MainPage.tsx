@@ -2,9 +2,24 @@ import React from "react";
 import { useMapMode } from "../hooks/useMapMode";
 import PolylineMap from "./PolylineMap";
 import CircleMap from "./CircleMap";
+import { useJsApiLoader } from "@react-google-maps/api";
 
 const MainPage: React.FC = () => {
   const { mode, handleModeChange } = useMapMode();
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
+    libraries: ["geometry", "drawing", "marker"],
+  });
+
+  if (loadError) {
+    return <div>Error cargando el mapa</div>;
+  }
+
+  if (!isLoaded) {
+    return <div>Cargando el mapa...</div>;
+  }
+
   return (
     <div className="mx-auto max-w-7xl p-4">
       <h1 className="mb-4 text-2xl font-bold">
