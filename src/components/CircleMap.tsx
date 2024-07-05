@@ -11,6 +11,7 @@ const CircleMap = () => {
     radius,
     area,
     perimeter,
+    waitingForCenter,
     handleSelectRadiusChange,
     handleDrawClick,
     handleCancelDrawClick,
@@ -41,7 +42,7 @@ const CircleMap = () => {
         <button
           className={`button button--secondary`}
           onClick={handleDrawClick}
-          disabled={drawMode || !!circle}
+          disabled={drawMode || !!circle || waitingForCenter}
         >
           Dibujar un círculo
         </button>
@@ -66,6 +67,7 @@ const CircleMap = () => {
       <InteractiveCircleMap
         drawMode={drawMode}
         radiusSelected={radiusSelected}
+        waitingForCenter={waitingForCenter}
         onCircleComplete={handleCircleComplete}
       />
       <Result area={area} perimeter={perimeter} radius={radius} />
