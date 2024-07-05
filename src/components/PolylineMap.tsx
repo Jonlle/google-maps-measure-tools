@@ -8,12 +8,18 @@ const PolylineMap: React.FC = () => {
     polylines,
     currentPolyline,
     totalDistance,
+    tooltipContent,
+    tooltipPosition,
     handleMapLoad,
     handleMapClick,
     handlePolylineLoad,
     handleStartDrawing,
     handleStopDrawing,
     handleClearDrawing,
+    handleCurrentPolylineLoad,
+    handleCurrentPolylineClick,
+    handleCurrentPolylineMouseOver,
+    handleCurrentPolylineMouseOut,
   } = usePolylineMap();
 
   return (
@@ -45,9 +51,15 @@ const PolylineMap: React.FC = () => {
         isDrawingMode={isDrawingMode}
         polylines={polylines}
         currentPolyline={currentPolyline}
+        tooltipContent={tooltipContent}
+        tooltipPosition={tooltipPosition}
         handleMapLoad={handleMapLoad}
         handleMapClick={handleMapClick}
         handlePolylineLoad={handlePolylineLoad}
+        handleCurrentPolylineLoad={handleCurrentPolylineLoad}
+        handleCurrentPolylineClick={handleCurrentPolylineClick}
+        handleCurrentPolylineMouseOver={handleCurrentPolylineMouseOver}
+        handleCurrentPolylineMouseOut={handleCurrentPolylineMouseOut}
       />
       <div className="mt-4 rounded bg-gray-100 p-4 shadow-lg">
         <div>Distancia total: {(totalDistance / 1000).toFixed(2)} km</div>

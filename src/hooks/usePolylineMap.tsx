@@ -8,6 +8,11 @@ export const usePolylineMap = () => {
     [],
   );
   const [totalDistance, setTotalDistance] = useState<number>(0);
+  const [tooltipContent, setTooltipContent] = useState<string>("");
+  const [tooltipPosition, setTooltipPosition] = useState<{
+    x: number;
+    y: number;
+  }>({ x: 0, y: 0 });
 
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRefs = useRef<google.maps.Marker[]>([]);
@@ -101,7 +106,7 @@ export const usePolylineMap = () => {
       polylinePath: google.maps.LatLng[],
       polylineIndex: number,
     ) => {
-      console.log("Polyline Clicked", polylinePath, polylineIndex);
+      console.log("Polyline Clicked", polylinePath, polylineIndex, event);
     },
     [],
   );
@@ -112,10 +117,38 @@ export const usePolylineMap = () => {
       polylinePath: google.maps.LatLng[],
       polylineIndex: number,
     ) => {
-      console.log("Polyline MouseOver", polylinePath, polylineIndex);
+      console.log("Polyline MouseOver", polylinePath, polylineIndex, event);
     },
     [],
   );
+
+  const handleCurrentPolylineLoad = useCallback(
+    (polyline: google.maps.Polyline) => {
+      console.log("Current Polyline Loaded", polyline);
+    },
+    [],
+  );
+
+  const handleCurrentPolylineClick = useCallback(
+    (event: google.maps.MapMouseEvent) => {
+      console.log("Current Polyline Loaded", event);
+    },
+    [],
+  );
+
+  const handleCurrentPolylineMouseOver = useCallback(
+    (event: google.maps.MapMouseEvent) => {
+      const { clientX, clientY } = event.domEvent as MouseEvent;
+
+      setTooltipPosition({ x: clientX, y: clientY });
+      setTooltipContent("Arrastra para cambiar, haz clic para eliminar");
+    },
+    [],
+  );
+
+  const handleCurrentPolylineMouseOut = useCallback(() => {
+    setTooltipContent("");
+  }, []);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -134,10 +167,12 @@ export const usePolylineMap = () => {
 
   return {
     isDrawingMode,
-    setIsDrawingMode,
     polylines,
     currentPolyline,
     totalDistance,
+    tooltipContent,
+    tooltipPosition,
+    setIsDrawingMode,
     setTotalDistance,
     handleMapLoad,
     handleMapClick,
@@ -145,5 +180,11 @@ export const usePolylineMap = () => {
     handleStartDrawing,
     handleStopDrawing,
     handleClearDrawing,
+    handlePolylineClick,
+    handlePolylineMouseOver,
+    handleCurrentPolylineLoad,
+    handleCurrentPolylineClick,
+    handleCurrentPolylineMouseOver,
+    handleCurrentPolylineMouseOut,
   };
 };

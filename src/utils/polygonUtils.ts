@@ -106,6 +106,5 @@ export function placeMarkersOnPolylineSegments(polyline: google.maps.LatLng[], m
     markers.push(totalDistanceMarker);
   }
 
-  console.log('Total distance:', totalDistance / 1000, 'km');
   return markers;
 }
