@@ -17,6 +17,7 @@ const CircleMap = () => {
     handleCancelDrawClick,
     handleClearCircleClick,
     handleCircleComplete,
+    handleCircleEdit,
   } = useCircleMap({ initialRadiusSelected: 0 });
 
   return (
@@ -69,6 +70,7 @@ const CircleMap = () => {
         radiusSelected={radiusSelected}
         waitingForCenter={waitingForCenter}
         onCircleComplete={handleCircleComplete}
+        onCircleEdit={handleCircleEdit}
       />
       <Result area={area} perimeter={perimeter} radius={radius} />
     </div>

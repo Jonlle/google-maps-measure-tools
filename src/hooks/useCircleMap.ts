@@ -4,9 +4,9 @@ import {
   calculateCirclePerimeter,
 } from "../utils/circleUtils";
 
-type UseCircleMapProps = {
+interface UseCircleMapProps {
   initialRadiusSelected: number;
-};
+}
 
 const useCircleMap = ({ initialRadiusSelected }: UseCircleMapProps) => {
   const [drawMode, setDrawMode] = useState<boolean>(false);
@@ -25,14 +25,14 @@ const useCircleMap = ({ initialRadiusSelected }: UseCircleMapProps) => {
     }: React.ChangeEvent<HTMLSelectElement>) => {
       setRadiusSelected(Number(newRadius));
       setDrawMode(false);
-      setWaitingForCenter(true); // Set waiting for center to true
+      setWaitingForCenter(true);
     },
     [],
   );
 
   const handleDrawClick = useCallback(() => {
     setDrawMode(true);
-    setWaitingForCenter(false); // Ensure waitingForCenter is false when draw mode is initiated
+    setWaitingForCenter(false);
   }, []);
 
   const handleClearCircleClick = useCallback(() => {
@@ -40,24 +40,40 @@ const useCircleMap = ({ initialRadiusSelected }: UseCircleMapProps) => {
       circle.setMap(null);
       setCircle(null);
       setDrawMode(false);
+      setWaitingForCenter(false);
       setRadiusSelected(0);
-      setRadius(0);
-      setWaitingForCenter(false); // Reset waitingForCenter when clearing the circle
+      setRadius(null);
+      setArea(null);
+      setPerimeter(null);
     }
   }, [circle]);
 
   const handleCancelDrawClick = useCallback(() => {
     setDrawMode(false);
-    setWaitingForCenter(false); // Ensure waitingForCenter is false when drawing is cancelled
+    setWaitingForCenter(false);
   }, []);
 
   const handleCircleComplete = useCallback(
     (newCircle: google.maps.Circle | null) => {
       setCircle(newCircle);
       setDrawMode(false);
+      setWaitingForCenter(false);
+      if (newCircle) {
+        const circleRadius = newCircle.getRadius();
+        setRadius(circleRadius);
+        setArea(calculateCircleArea(circleRadius));
+        setPerimeter(calculateCirclePerimeter(circleRadius));
+      }
     },
     [],
   );
+
+  const handleCircleEdit = useCallback((editedCircle: google.maps.Circle) => {
+    const circleRadius = editedCircle.getRadius();
+    setRadius(circleRadius);
+    setArea(calculateCircleArea(circleRadius));
+    setPerimeter(calculateCirclePerimeter(circleRadius));
+  }, []);
 
   useEffect(() => {
     if (circle) {
@@ -66,6 +82,7 @@ const useCircleMap = ({ initialRadiusSelected }: UseCircleMapProps) => {
       setArea(calculateCircleArea(circleRadius));
       setPerimeter(calculateCirclePerimeter(circleRadius));
     } else {
+      setRadius(null);
       setArea(null);
       setPerimeter(null);
     }
@@ -84,6 +101,7 @@ const useCircleMap = ({ initialRadiusSelected }: UseCircleMapProps) => {
     handleCancelDrawClick,
     handleClearCircleClick,
     handleCircleComplete,
+    handleCircleEdit,
   };
 };
 

@@ -13,6 +13,7 @@ interface InteractiveCircleMapProps {
   radiusSelected: number;
   waitingForCenter: boolean;
   onCircleComplete: (circle: google.maps.Circle | null) => void;
+  onCircleEdit: (circle: google.maps.Circle) => void;
 }
 
 const libraries: Libraries = ["geometry", "drawing"];
@@ -34,6 +35,7 @@ const InteractiveCircleMap = ({
   radiusSelected,
   waitingForCenter,
   onCircleComplete,
+  onCircleEdit,
 }: InteractiveCircleMapProps) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
@@ -61,6 +63,14 @@ const InteractiveCircleMap = ({
   const handleCircleComplete = useCallback(
     (circle: google.maps.Circle) => {
       circleRef.current = circle;
+      circle.setEditable(true);
+      circle.setDraggable(true);
+      circle.addListener("radius_changed", () => {
+        onCircleEdit(circle);
+      });
+      circle.addListener("center_changed", () => {
+        onCircleEdit(circle);
+      });
       if (drawingManagerRef.current) {
         drawingManagerRef.current.setDrawingMode(null);
       }
@@ -69,7 +79,7 @@ const InteractiveCircleMap = ({
       }
       onCircleComplete(circle);
     },
-    [onCircleComplete],
+    [onCircleComplete, onCircleEdit],
   );
 
   const handleMapClick = useCallback(
