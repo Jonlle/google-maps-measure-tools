@@ -70,6 +70,7 @@ const useCircleMap = ({ initialRadiusSelected }: UseCircleMapProps) => {
 
   const handleCircleEdit = useCallback((editedCircle: google.maps.Circle) => {
     const circleRadius = editedCircle.getRadius();
+    setCircle(editedCircle);
     setRadius(circleRadius);
     setArea(calculateCircleArea(circleRadius));
     setPerimeter(calculateCirclePerimeter(circleRadius));
