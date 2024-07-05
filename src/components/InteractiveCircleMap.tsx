@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   GoogleMap,
   useLoadScript,
@@ -6,7 +6,6 @@ import {
   DrawingManager,
 } from "@react-google-maps/api";
 import { circleOptions } from "../utils/circleUtils";
-import { polygonOptions } from "../utils/polygonUtils";
 import useMapFitBounds from "../hooks/useMapFitBounds";
 
 interface InteractiveCircleMapProps {
@@ -48,6 +47,9 @@ const InteractiveCircleMap = ({
 
   const onMapLoad = (map: google.maps.Map) => {
     googleMapRef.current = map;
+    if (waitingForCenter) {
+      map.setOptions({ draggableCursor: "crosshair" });
+    }
   };
 
   const onDrawingManagerLoad = (
@@ -61,6 +63,9 @@ const InteractiveCircleMap = ({
       circleRef.current = circle;
       if (drawingManagerRef.current) {
         drawingManagerRef.current.setDrawingMode(null);
+      }
+      if (googleMapRef.current) {
+        googleMapRef.current.setOptions({ draggableCursor: "" });
       }
       onCircleComplete(circle);
     },
@@ -81,6 +86,14 @@ const InteractiveCircleMap = ({
     },
     [waitingForCenter, radiusSelected, handleCircleComplete],
   );
+
+  useEffect(() => {
+    if (googleMapRef.current) {
+      googleMapRef.current.setOptions({
+        draggableCursor: waitingForCenter ? "crosshair" : "",
+      });
+    }
+  }, [waitingForCenter]);
 
   useMapFitBounds(googleMapRef.current, circleRef.current);
 
