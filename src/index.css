@@ -72,4 +72,15 @@
   .select__option {
     @apply truncate pr-8;
   }
+  
+  .marker-label-shadow {
+    margin-bottom: 10px;
+    color: black; /* Color del texto */
+    font-size: 14px; /* Tamaño de la fuente */
+    font-weight: bold; /* Peso de la fuente (negrita) */
+    font-family: Arial; /* Fuente del texto */
+    text-shadow: 0 0 14px rgb(255, 255, 255, 0.95); /* Sombra alrededor del texto */
+  }
+  
 }
+

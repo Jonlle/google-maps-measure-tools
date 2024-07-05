@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { placeMarkersOnPolylineSegments } from "../utils/polygonUtils";
 
 export const usePolylineMap = () => {
   const [isDrawingMode, setIsDrawingMode] = useState<boolean>(false);
@@ -31,12 +32,6 @@ export const usePolylineMap = () => {
 
       const newPath = [...currentPolyline, event.latLng];
       setCurrentPolyline(newPath);
-
-      const marker = new google.maps.Marker({
-        position: event.latLng,
-        map: mapRef.current,
-      });
-      markerRefs.current.push(marker);
 
       if (newPath.length > 1) {
         const distance = google.maps.geometry.spherical.computeDistanceBetween(
@@ -100,19 +95,40 @@ export const usePolylineMap = () => {
     setTotalDistance(0);
   }, []);
 
-  useEffect(() => {
-    const updateMarkers = () => {
-      markerRefs.current.forEach((marker) => marker.setMap(null));
-      markerRefs.current = currentPolyline.map((latLng) => {
-        return new google.maps.Marker({
-          position: latLng,
-          map: mapRef.current,
-        });
-      });
-    };
+  const handlePolylineClick = useCallback(
+    (
+      event: google.maps.MapMouseEvent,
+      polylinePath: google.maps.LatLng[],
+      polylineIndex: number,
+    ) => {
+      console.log("Polyline Clicked", polylinePath, polylineIndex);
+    },
+    [],
+  );
 
-    if (isDrawingMode) {
-      updateMarkers();
+  const handlePolylineMouseOver = useCallback(
+    (
+      event: google.maps.MapMouseEvent,
+      polylinePath: google.maps.LatLng[],
+      polylineIndex: number,
+    ) => {
+      console.log("Polyline MouseOver", polylinePath, polylineIndex);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (mapRef.current) {
+      const updateMarkers = () => {
+        markerRefs.current.forEach((marker) => marker.setMap(null)); // Limpiar marcadores existentes
+        markerRefs.current = placeMarkersOnPolylineSegments(
+          currentPolyline,
+          mapRef.current!,
+        );
+      };
+      if (isDrawingMode) {
+        updateMarkers();
+      }
     }
   }, [currentPolyline, isDrawingMode]);
 

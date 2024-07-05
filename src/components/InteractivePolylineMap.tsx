@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   GoogleMap,
   Libraries,
@@ -6,7 +6,7 @@ import {
   useLoadScript,
 } from "@react-google-maps/api";
 
-const libraries: Libraries = ["geometry"];
+const libraries: Libraries = ["geometry", "drawing","marker"];
 
 const mapContainerStyle = {
   width: "100%",
@@ -45,6 +45,28 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
     libraries,
   });
 
+  const handlePolylineClick = useCallback(
+    (
+      event: google.maps.MapMouseEvent,
+      polylinePath: google.maps.LatLng[],
+      polylineIndex: number,
+    ) => {
+      console.log("Polyline Clicked", polylinePath, polylineIndex);
+    },
+    [],
+  );
+
+  const handlePolylineMouseOver = useCallback(
+    (
+      event: google.maps.MapMouseEvent,
+      polylinePath: google.maps.LatLng[],
+      polylineIndex: number,
+    ) => {
+      console.log("Polyline MouseOver", polylinePath, polylineIndex);
+    },
+    [],
+  );
+
   if (loadError) return <div>Error al cargar el mapa</div>;
   if (!isLoaded) return <div>Cargando...</div>;
   return (
@@ -67,6 +89,8 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
             draggable: false,
           }}
           onLoad={handlePolylineLoad}
+          onClick={(e) => handlePolylineClick(e, path, index)}
+          onMouseOver={(e) => handlePolylineMouseOver(e, path, index)}
         />
       ))}
       {isDrawingMode && currentPolyline.length > 0 && (
