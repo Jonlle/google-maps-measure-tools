@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import InteractivePolylineMap from "./InteractivePolylineMap";
+import Result from "./Result";
 
 type CallbackFunction = () => void;
 
@@ -7,6 +8,7 @@ const PolylineMap: React.FC = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasDrawing, setHasDrawing] = useState(false);
   const [totalDistance, setTotalDistance] = useState(0);
+  const [area, setArea] = useState<number>(0);
   const [startDrawingCallback, setStartDrawingCallback] =
     useState<CallbackFunction | null>(null);
   const [stopDrawingCallback, setStopDrawingCallback] =
@@ -47,7 +49,7 @@ const PolylineMap: React.FC = () => {
           disabled={!isDrawing}
           className="button button--secondary"
         >
-          Detener
+          Cancelar
         </button>
         <button
           onClick={onClearDrawing}
@@ -62,13 +64,12 @@ const PolylineMap: React.FC = () => {
         setIsDrawing={setIsDrawing}
         setHasDrawing={setHasDrawing}
         setTotalDistance={setTotalDistance}
+        setArea={setArea}
         setStartDrawingCallback={setStartDrawingCallback}
         setStopDrawingCallback={setStopDrawingCallback}
         setClearDrawingCallback={setClearDrawingCallback}
       />
-      <div className="mt-4 rounded bg-gray-100 p-4 shadow-lg">
-        <div>Total distance: {(totalDistance / 1000).toFixed(2)} km</div>
-      </div>
+      <Result area={area} totalDistance={totalDistance} />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { InteractivePolylineMapProps } from "../components/InteractivePolylineMap";
 import {
+  calculatePolygonArea,
   calculateTotalDistance,
   placeMarkersOnPolylineSegments,
 } from "../utils/polylineUtils";
@@ -21,6 +22,7 @@ export const usePolylineMap = ({
   setIsDrawing,
   setHasDrawing,
   setTotalDistance,
+  setArea,
   setStartDrawingCallback,
   setStopDrawingCallback,
   setClearDrawingCallback,
@@ -203,10 +205,8 @@ export const usePolylineMap = ({
           );
 
         if (moveDistance <= MIN_MOVE_DISTANCE) {
-          // Si el movimiento fue menor que el umbral, lo tratamos como un clic
           handlePolylineClick(event);
         } else {
-          // Si fue un arrastre, actualizamos el path
           const newPath = polylineRef.current.getPath().getArray();
           setPolylinePath([...newPath]);
         }
@@ -247,8 +247,12 @@ export const usePolylineMap = ({
 
     const distance = calculateTotalDistance(polylinePath);
     setTotalDistance(distance);
+
+    const polygonArea = calculatePolygonArea(polylinePath);
+    setArea(polygonArea);
+
     setHasDrawing(polylinePath.length > 0);
-  }, [polylinePath, setHasDrawing, setTotalDistance]);
+  }, [polylinePath, setArea, setHasDrawing, setTotalDistance]);
 
   return {
     isDrawing,

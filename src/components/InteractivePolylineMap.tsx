@@ -12,6 +12,7 @@ export interface InteractivePolylineMapProps {
   setIsDrawing: React.Dispatch<React.SetStateAction<boolean>>;
   setHasDrawing: React.Dispatch<React.SetStateAction<boolean>>;
   setTotalDistance: React.Dispatch<React.SetStateAction<number>>;
+  setArea: React.Dispatch<React.SetStateAction<number>>;
   setStartDrawingCallback: React.Dispatch<
     React.SetStateAction<CallbackFunction | null>
   >;
@@ -28,6 +29,7 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
   setIsDrawing,
   setHasDrawing,
   setTotalDistance,
+  setArea,
   setStartDrawingCallback,
   setStopDrawingCallback,
   setClearDrawingCallback,
@@ -50,6 +52,7 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
     setIsDrawing,
     setHasDrawing,
     setTotalDistance,
+    setArea,
     setStartDrawingCallback,
     setStopDrawingCallback,
     setClearDrawingCallback,

@@ -1,4 +1,11 @@
-import { TLatLng, TLatLngLiteral, TMap, TMarker, TMVCArray, TPolylineOptions } from "../types/googleMapsTypes";
+import {
+  TLatLng,
+  TLatLngLiteral,
+  TMap,
+  TMarker,
+  TMVCArray,
+  TPolylineOptions,
+} from "../types/googleMapsTypes";
 
 export const polygonOptions: TPolylineOptions = {
   strokeColor: "#0000FF",
@@ -22,12 +29,19 @@ const getPolygonPointsFromPaths = (
   return polygonPoints;
 };
 
-export const calculatePolygonArea = (
-  paths: google.maps.MVCArray<TMVCArray>,
-): number => {
-  const polygonPoints = getPolygonPointsFromPaths(paths);
-  const area = google.maps.geometry.spherical.computeArea(polygonPoints);
-  return area;
+export const calculatePolygonArea = (path: TLatLng[]): number => {
+  if (
+    path.length < 3 ||
+    path[0].lat() !== path[path.length - 1].lat() ||
+    path[0].lng() !== path[path.length - 1].lng()
+  ) {
+    return 0;
+  }
+
+  const polygonPath = path.map(
+    (latLng) => new google.maps.LatLng(latLng.lat(), latLng.lng()),
+  );
+  return google.maps.geometry.spherical.computeArea(polygonPath);
 };
 
 export const calculatePolygonPerimeter = (
@@ -43,10 +57,13 @@ export const calculatePolygonPerimeter = (
   return perimeter;
 };
 
-export function computeSegmentDistance(startLatLng: TLatLngLiteral, endLatLng: TLatLngLiteral): number {
+export function computeSegmentDistance(
+  startLatLng: TLatLngLiteral,
+  endLatLng: TLatLngLiteral,
+): number {
   const distance = google.maps.geometry.spherical.computeDistanceBetween(
     new google.maps.LatLng(startLatLng.lat, startLatLng.lng),
-    new google.maps.LatLng(endLatLng.lat, endLatLng.lng)
+    new google.maps.LatLng(endLatLng.lat, endLatLng.lng),
   );
   return distance;
 }
@@ -56,13 +73,16 @@ export const calculateTotalDistance = (path: TLatLng[]) => {
   return totalDistance;
 };
 
-export function placeMarkersOnPolylineSegments(polyline: TLatLng[], map: TMap): TMarker[] {
+export function placeMarkersOnPolylineSegments(
+  polyline: TLatLng[],
+  map: TMap,
+): TMarker[] {
   const markerLabel = {
-    color: 'black',
-    fontSize: '14px',
-    fontWeight: 'bold',
-    fontFamily: 'Arial',
-    className: 'marker-label-shadow',
+    color: "black",
+    fontSize: "14px",
+    fontWeight: "bold",
+    fontFamily: "Arial",
+    className: "marker-label-shadow",
   };
 
   let totalDistance = 0;
@@ -80,7 +100,7 @@ export function placeMarkersOnPolylineSegments(polyline: TLatLng[], map: TMap): 
     const midPoint = google.maps.geometry.spherical.interpolate(
       new google.maps.LatLng(startLatLng.lat, startLatLng.lng),
       new google.maps.LatLng(endLatLng.lat, endLatLng.lng),
-      0.5
+      0.5,
     );
 
     // Create marker for midpoint showing segment distance
@@ -91,7 +111,7 @@ export function placeMarkersOnPolylineSegments(polyline: TLatLng[], map: TMap): 
         ...markerLabel,
         text: `${(segmentDistance / 1000).toFixed(2)} km`,
       },
-      icon:'.'
+      icon: ".",
     });
 
     // Create marker for node showing total distance accumulated
@@ -102,9 +122,8 @@ export function placeMarkersOnPolylineSegments(polyline: TLatLng[], map: TMap): 
         ...markerLabel,
         text: `${(totalDistance / 1000).toFixed(2)} km`,
       },
-      icon:'.'
+      icon: ".",
     });
-
 
     markers.push(segmentDistanceMarker);
     markers.push(totalDistanceMarker);
