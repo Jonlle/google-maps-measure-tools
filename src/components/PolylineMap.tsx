@@ -19,6 +19,8 @@ const PolylineMap: React.FC = () => {
     handlePolylineClick,
     handlePolylineMouseOver,
     handlePolylineMouseOut,
+    handlePolylineMouseDown,
+    handlePolylineMouseUp,
   } = usePolylineMap();
 
   return (
@@ -58,6 +60,8 @@ const PolylineMap: React.FC = () => {
         handlePolylineClick={handlePolylineClick}
         handlePolylineMouseOver={handlePolylineMouseOver}
         handlePolylineMouseOut={handlePolylineMouseOut}
+        handlePolylineMouseDown={handlePolylineMouseDown}
+        handlePolylineMouseUp={handlePolylineMouseUp}
       />
       <div className="mt-4 rounded bg-gray-100 p-4 shadow-lg">
         <div>Distancia total: {(totalDistance / 1000).toFixed(2)} km</div>

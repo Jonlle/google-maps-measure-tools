@@ -22,6 +22,8 @@ interface InteractivePolylineMapProps {
   handlePolylineClick: (event: TMapMouseEvent) => void;
   handlePolylineMouseOver: (event: TMapMouseEvent) => void;
   handlePolylineMouseOut: () => void;
+  handlePolylineMouseDown: (event: TMapMouseEvent) => void;
+  handlePolylineMouseUp: (event: TMapMouseEvent) => void;
 }
 
 const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
@@ -36,6 +38,8 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
   handlePolylineClick,
   handlePolylineMouseOver,
   handlePolylineMouseOut,
+  handlePolylineMouseDown,
+  handlePolylineMouseUp,
 }) => {
   return (
     <>
@@ -55,6 +59,8 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
           onClick={handlePolylineClick}
           onMouseOver={handlePolylineMouseOver}
           onMouseOut={handlePolylineMouseOut}
+          onMouseDown={handlePolylineMouseDown}
+          onMouseUp={handlePolylineMouseUp}
         />
       </GoogleMap>
       {tooltipContent && (
