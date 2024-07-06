@@ -1,12 +1,19 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { placeMarkersOnPolylineSegments } from "../utils/polygonUtils";
+import {
+  calculateTotalDistance,
+  placeMarkersOnPolylineSegments,
+} from "../utils/polylineUtils";
+import {
+  TLatLng,
+  TMap,
+  TMapMouseEvent,
+  TMarker,
+  TPolyline,
+} from "../types/googleMapsTypes";
 
 export const usePolylineMap = () => {
   const [isDrawingMode, setIsDrawingMode] = useState<boolean>(false);
-  const [polylines, setPolylines] = useState<google.maps.LatLng[][]>([]);
-  const [currentPolyline, setCurrentPolyline] = useState<google.maps.LatLng[]>(
-    [],
-  );
+  const [polylinePath, setPolylinePath] = useState<TLatLng[]>([]);
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [tooltipContent, setTooltipContent] = useState<string>("");
   const [tooltipPosition, setTooltipPosition] = useState<{
@@ -14,13 +21,26 @@ export const usePolylineMap = () => {
     y: number;
   }>({ x: 0, y: 0 });
 
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const markerRefs = useRef<google.maps.Marker[]>([]);
-  const polylineRefs = useRef<google.maps.Polyline[]>([]);
+  const mapRef = useRef<TMap | null>(null);
+  const polylineRef = useRef<TPolyline | null>(null);
+  const markerRefs = useRef<TMarker[]>([]);
   const controlPointsRefs = useRef<HTMLDivElement[]>([]);
 
-  const handleMapLoad = useCallback((map: google.maps.Map) => {
+  const handleMapLoad = useCallback((map: TMap) => {
     mapRef.current = map;
+  }, []);
+
+  const handlePolylineLoad = useCallback((polyline: TPolyline) => {
+    polylineRef.current = polyline;
+    const polylinePath = polyline.getPath().getArray();
+    setPolylinePath(polylinePath);
+
+    const controlPointElements = Array.from(
+      document.querySelectorAll<HTMLDivElement>(
+        'div[style*="cursor: pointer;"]',
+      ),
+    );
+    controlPointsRefs.current.push(...controlPointElements);
   }, []);
 
   const updateMapCursor = useCallback((newCursor: string | null) => {
@@ -31,106 +51,63 @@ export const usePolylineMap = () => {
 
   const handleMapClick = useCallback(
     (event: google.maps.MapMouseEvent) => {
-      if (!isDrawingMode || !event.latLng) {
+      const { latLng } = event;
+      if (!isDrawingMode || !latLng) {
         return;
       }
-
-      const newPath = [...currentPolyline, event.latLng];
-      setCurrentPolyline(newPath);
-
-      if (newPath.length > 1) {
-        const distance = google.maps.geometry.spherical.computeDistanceBetween(
-          newPath[newPath.length - 2],
-          event.latLng,
-        );
-        setTotalDistance((prevDistance) => prevDistance + distance);
-      }
+      setPolylinePath((previousPath) => [...previousPath, latLng]);
     },
-    [currentPolyline, isDrawingMode],
+    [isDrawingMode],
   );
 
-  const handlePolylineLoad = useCallback((polyline: google.maps.Polyline) => {
-    polylineRefs.current.push(polyline);
-    const controlPointElements = Array.from(
-      document.querySelectorAll<HTMLDivElement>(
-        'div[style*="cursor: pointer;"]',
-      ),
-    );
-    controlPointsRefs.current.push(...controlPointElements);
-  }, []);
-
-  const handleStartDrawing = useCallback(() => {
+  const startDrawing = useCallback(() => {
     setIsDrawingMode(true);
-    setCurrentPolyline([]);
     updateMapCursor("crosshair");
   }, [updateMapCursor]);
 
-  const handleStopDrawing = useCallback(() => {
+  const stopDrawing = useCallback(() => {
     setIsDrawingMode(false);
     updateMapCursor(null);
+  }, [updateMapCursor]);
 
-    if (currentPolyline.length > 1) {
-      setPolylines((previousPolylines) => [
-        ...previousPolylines,
-        currentPolyline,
-      ]);
-      setCurrentPolyline([]);
-    } else if (currentPolyline.length === 1) {
-      setCurrentPolyline([]);
-      const controlPointElements = Array.from(
-        document.querySelectorAll<HTMLDivElement>(
-          'div[style*="cursor: pointer;"]',
-        ),
-      );
-      controlPointsRefs.current.push(...controlPointElements);
-    }
-  }, [currentPolyline, updateMapCursor]);
-
-  const handleClearDrawing = useCallback(() => {
-    polylineRefs.current.forEach((polyline) => polyline.setMap(null));
-    markerRefs.current.forEach((marker) => marker.setMap(null));
-    controlPointsRefs.current.forEach((controlPoint) => controlPoint.remove());
-
-    polylineRefs.current = [];
-    markerRefs.current = [];
-    controlPointsRefs.current = [];
-
-    setPolylines([]);
-    setCurrentPolyline([]);
+  const clearDrawing = useCallback(() => {
+    setPolylinePath([]);
     setTotalDistance(0);
   }, []);
 
   const handlePolylineClick = useCallback(
-    (
-      event: google.maps.MapMouseEvent,
-      polylinePath: google.maps.LatLng[],
-      polylineIndex: number,
-    ) => {
-      console.log("Polyline Clicked", polylinePath, polylineIndex, event);
+    (event: TMapMouseEvent) => {
+      const { latLng } = event;
+      const closestDistance = 10;
+
+      if (!latLng) return;
+
+      const clickedIndex = polylinePath.findIndex((vertex) => {
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          latLng,
+          vertex,
+        );
+        return distance < closestDistance;
+      });
+
+      if (clickedIndex === -1) return;
+
+      if (clickedIndex === 0 && polylinePath.length > 2) {
+        const closedPath = [...polylinePath, polylinePath[0]];
+        setPolylinePath(closedPath);
+        setIsDrawingMode(false);
+      } else if (clickedIndex > 0) {
+        const updatedPath = polylinePath.filter(
+          (_, index) => index !== clickedIndex,
+        );
+        setPolylinePath(updatedPath);
+      }
     },
-    [],
+    [polylinePath],
   );
 
   const handlePolylineMouseOver = useCallback(
-    (
-      event: google.maps.MapMouseEvent,
-      polylinePath: google.maps.LatLng[],
-      polylineIndex: number,
-    ) => {
-      console.log("Polyline MouseOver", polylinePath, polylineIndex, event);
-    },
-    [],
-  );
-
-  const handleCurrentPolylineLoad = useCallback(
-    (polyline: google.maps.Polyline) => {
-      console.log("Current Polyline Loaded", polyline);
-    },
-    [],
-  );
-
-  const handleCurrentPolylineMouseOver = useCallback(
-    (event: google.maps.MapMouseEvent) => {
+    (event: TMapMouseEvent) => {
       const { latLng } = event;
       const { clientX, clientY } = event.domEvent as MouseEvent;
 
@@ -138,28 +115,31 @@ export const usePolylineMap = () => {
         return;
       }
 
-      const closestDistance = 10;
+      const minDistance = 8;
+      let tooltip = "";
 
-      let tooltipText = "";
-
-      const nearPoint = currentPolyline.findIndex((point) => {
+      const nearestIndex = polylinePath.findIndex((point) => {
         const distance = google.maps.geometry.spherical.computeDistanceBetween(
           latLng,
           point,
         );
-        return distance < closestDistance;
+        return distance < minDistance;
       });
 
-      if (nearPoint !== -1) {
-        tooltipText =
-          nearPoint === 0
-            ? "Haz clic para terminar el polígono, arrastra para cambiar"
-            : "Arrastra para cambiar, haz clic para eliminar";
+      if (nearestIndex !== -1) {
+        if (nearestIndex > 0) {
+          tooltip = "Arrastra para cambiar, Click para eliminar";
+        } else {
+          tooltip =
+            polylinePath.length > 2
+              ? "Click para encerrar, arrastra para cambiar"
+              : "Arrastra para cambiar";
+        }
       } else {
-        currentPolyline.some((point, index) => {
+        polylinePath.some((point, index) => {
           if (index === 0) return false;
 
-          const previousPoint = currentPolyline[index - 1];
+          const previousPoint = polylinePath[index - 1];
           const midpoint = new google.maps.LatLng(
             (point.lat() + previousPoint.lat()) / 2,
             (point.lng() + previousPoint.lng()) / 2,
@@ -171,8 +151,8 @@ export const usePolylineMap = () => {
               midpoint,
             );
 
-          if (distance < closestDistance) {
-            tooltipText = "Arrastra para cambiar";
+          if (distance < minDistance) {
+            tooltip = "Arrastra para cambiar";
             return true;
           }
           return false;
@@ -180,65 +160,37 @@ export const usePolylineMap = () => {
       }
 
       setTooltipPosition({ x: clientX, y: clientY });
-      setTooltipContent(tooltipText);
+      setTooltipContent(tooltip);
     },
-    [currentPolyline],
+    [polylinePath],
   );
 
-  const handleCurrentPolylineClick = useCallback(
-    (event: google.maps.MapMouseEvent) => {
-      const { latLng } = event;
-
-      // Encuentra el punto más cercano en currentPolyline al clicado
-      let closestPointIndex = -1;
-      let closestDistance = 10; // Inicializa con el radio de clic
-
-      currentPolyline.forEach((point, index) => {
-        const distance = google.maps.geometry.spherical.computeDistanceBetween(
-          latLng,
-          point,
-        );
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestPointIndex = index;
-        }
-      });
-
-      // Maneja la lógica del clic basada en el punto más cercano o el punto medio del segmento
-      if (closestPointIndex !== -1) {
-        // Lógica para manejar el clic en el punto más cercano
-        console.log("Clic en el punto:", currentPolyline[closestPointIndex]);
-      } else {
-        // Lógica para manejar el clic en el punto medio del segmento (si es necesario)
-        console.log("Clic en el punto medio del segmento");
-      }
-    },
-    [currentPolyline],
-  );
-
-  const handleCurrentPolylineMouseOut = useCallback(() => {
+  const handlePolylineMouseOut = useCallback(() => {
     setTooltipContent("");
   }, []);
 
   useEffect(() => {
-    if (mapRef.current) {
-      const updateMarkers = () => {
-        markerRefs.current.forEach((marker) => marker.setMap(null)); // Limpiar marcadores existentes
-        markerRefs.current = placeMarkersOnPolylineSegments(
-          currentPolyline,
-          mapRef.current!,
-        );
-      };
-      if (isDrawingMode) {
-        updateMarkers();
-      }
-    }
-  }, [currentPolyline, isDrawingMode]);
+    if (!mapRef.current || !polylinePath) return;
+
+    const updatePolylineMarkers = () => {
+      markerRefs.current.forEach((marker) => marker.setMap(null));
+      const markers = placeMarkersOnPolylineSegments(
+        polylinePath,
+        mapRef.current!,
+      );
+      markerRefs.current = markers;
+    };
+
+    updatePolylineMarkers();
+
+    const distance = calculateTotalDistance(polylinePath);
+    setTotalDistance(distance);
+  }, [polylinePath]);
 
   return {
     isDrawingMode,
-    polylines,
-    currentPolyline,
+    mapRef,
+    polylinePath,
     totalDistance,
     tooltipContent,
     tooltipPosition,
@@ -247,14 +199,11 @@ export const usePolylineMap = () => {
     handleMapLoad,
     handleMapClick,
     handlePolylineLoad,
-    handleStartDrawing,
-    handleStopDrawing,
-    handleClearDrawing,
+    startDrawing,
+    stopDrawing,
+    clearDrawing,
     handlePolylineClick,
     handlePolylineMouseOver,
-    handleCurrentPolylineLoad,
-    handleCurrentPolylineClick,
-    handleCurrentPolylineMouseOver,
-    handleCurrentPolylineMouseOut,
+    handlePolylineMouseOut,
   };
 };

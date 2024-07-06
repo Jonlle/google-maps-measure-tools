@@ -5,43 +5,42 @@ import { usePolylineMap } from "../hooks/usePolylineMap";
 const PolylineMap: React.FC = () => {
   const {
     isDrawingMode,
-    polylines,
-    currentPolyline,
+    mapRef,
+    polylinePath,
     totalDistance,
     tooltipContent,
     tooltipPosition,
     handleMapLoad,
     handleMapClick,
+    startDrawing,
+    stopDrawing,
+    clearDrawing,
     handlePolylineLoad,
-    handleStartDrawing,
-    handleStopDrawing,
-    handleClearDrawing,
-    handleCurrentPolylineLoad,
-    handleCurrentPolylineClick,
-    handleCurrentPolylineMouseOver,
-    handleCurrentPolylineMouseOut,
+    handlePolylineClick,
+    handlePolylineMouseOver,
+    handlePolylineMouseOut,
   } = usePolylineMap();
 
   return (
     <div className="mx-auto max-w-7xl">
       <div className="mb-4 flex justify-start space-x-2">
         <button
-          onClick={handleStartDrawing}
+          onClick={startDrawing}
           disabled={isDrawingMode}
           className={`button button--secondary`}
         >
           Dibujar
         </button>
         <button
-          onClick={handleStopDrawing}
+          onClick={stopDrawing}
           disabled={!isDrawingMode}
           className={`button button--secondary`}
         >
           Detener
         </button>
         <button
-          onClick={handleClearDrawing}
-          disabled={isDrawingMode}
+          onClick={clearDrawing}
+          disabled={polylinePath.length === 0}
           className={`button button--secondary`}
         >
           Limpiar
@@ -49,17 +48,16 @@ const PolylineMap: React.FC = () => {
       </div>
       <InteractivePolylineMap
         isDrawingMode={isDrawingMode}
-        polylines={polylines}
-        currentPolyline={currentPolyline}
+        map={mapRef.current}
+        polylinePath={polylinePath}
         tooltipContent={tooltipContent}
         tooltipPosition={tooltipPosition}
         handleMapLoad={handleMapLoad}
         handleMapClick={handleMapClick}
         handlePolylineLoad={handlePolylineLoad}
-        handleCurrentPolylineLoad={handleCurrentPolylineLoad}
-        handleCurrentPolylineClick={handleCurrentPolylineClick}
-        handleCurrentPolylineMouseOver={handleCurrentPolylineMouseOver}
-        handleCurrentPolylineMouseOut={handleCurrentPolylineMouseOut}
+        handlePolylineClick={handlePolylineClick}
+        handlePolylineMouseOver={handlePolylineMouseOver}
+        handlePolylineMouseOut={handlePolylineMouseOut}
       />
       <div className="mt-4 rounded bg-gray-100 p-4 shadow-lg">
         <div>Distancia total: {(totalDistance / 1000).toFixed(2)} km</div>
