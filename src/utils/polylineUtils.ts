@@ -1,9 +1,7 @@
-export const polygonOptions = {
+export const polygonOptions: google.maps.PolylineOptions = {
   strokeColor: "#0000FF",
   strokeOpacity: 0.8,
   strokeWeight: 2,
-  fillColor: "#0000FF",
-  fillOpacity: 0.35,
 };
 
 function convertLatLngToLatLngLiteral(latLang: google.maps.LatLng): google.maps.LatLngLiteral {
@@ -51,6 +49,11 @@ export function computeSegmentDistance(startLatLng: google.maps.LatLngLiteral, e
   );
   return distance;
 }
+
+export const calculateTotalDistance = (path: google.maps.MVCArray<google.maps.LatLng>) => {
+  const totalDistance = google.maps.geometry.spherical.computeLength(path);
+  return totalDistance;
+};
 
 export function placeMarkersOnPolylineSegments(polyline: google.maps.LatLng[], map: google.maps.Map): google.maps.Marker[] {
   const markerLabel = {
