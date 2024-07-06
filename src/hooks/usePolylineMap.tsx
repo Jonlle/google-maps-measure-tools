@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { InteractivePolylineMapProps } from "../components/InteractivePolylineMap";
 import {
   calculateTotalDistance,
   placeMarkersOnPolylineSegments,
@@ -15,13 +16,19 @@ const MIN_MOVE_DISTANCE = 10;
 const MIN_CLICK_DISTANCE = 10;
 const MIN_HOVER_DISTANCE = 8;
 
-export const usePolylineMap = () => {
-  const [isDrawingMode, setIsDrawingMode] = useState<boolean>(false);
+export const usePolylineMap = ({
+  isDrawing,
+  setIsDrawing,
+  setHasDrawing,
+  setTotalDistance,
+  setStartDrawingCallback,
+  setStopDrawingCallback,
+  setClearDrawingCallback,
+}: InteractivePolylineMapProps) => {
   const [polylinePath, setPolylinePath] = useState<TLatLng[]>([]);
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [clickStartPosition, setClickStartPosition] =
     useState<google.maps.LatLng | null>(null);
-  const [totalDistance, setTotalDistance] = useState<number>(0);
   const [tooltipContent, setTooltipContent] = useState<string>("");
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
@@ -51,28 +58,28 @@ export const usePolylineMap = () => {
   const handleMapClick = useCallback(
     (event: google.maps.MapMouseEvent) => {
       const { latLng } = event;
-      if (!isDrawingMode || !latLng) {
+      if (!isDrawing || !latLng) {
         return;
       }
       setPolylinePath((previousPath) => [...previousPath, latLng]);
     },
-    [isDrawingMode],
+    [isDrawing],
   );
 
   const startDrawing = useCallback(() => {
-    setIsDrawingMode(true);
+    setIsDrawing(true);
     updateMapCursor("crosshair");
-  }, [updateMapCursor]);
+  }, [setIsDrawing, updateMapCursor]);
 
   const stopDrawing = useCallback(() => {
-    setIsDrawingMode(false);
+    setIsDrawing(false);
     updateMapCursor(null);
-  }, [updateMapCursor]);
+  }, [setIsDrawing, updateMapCursor]);
 
   const clearDrawing = useCallback(() => {
     setPolylinePath([]);
     setTotalDistance(0);
-  }, []);
+  }, [setTotalDistance]);
 
   const handlePolylineClick = useCallback(
     (event: TMapMouseEvent) => {
@@ -95,7 +102,7 @@ export const usePolylineMap = () => {
       if (clickedIndex === 0 && polylinePath.length > 2) {
         const closedPath = [...polylinePath, polylinePath[0]];
         setPolylinePath(closedPath);
-        setIsDrawingMode(false);
+        stopDrawing();
       } else if (clickedIndex > 0) {
         const updatedPath = polylinePath.filter(
           (_, index) => index !== clickedIndex,
@@ -103,7 +110,7 @@ export const usePolylineMap = () => {
         setPolylinePath(updatedPath);
       }
     },
-    [polylinePath],
+    [polylinePath, stopDrawing],
   );
 
   const handlePolylineMouseOver = useCallback(
@@ -212,6 +219,19 @@ export const usePolylineMap = () => {
   );
 
   useEffect(() => {
+    setStartDrawingCallback(() => startDrawing);
+    setStopDrawingCallback(() => stopDrawing);
+    setClearDrawingCallback(() => clearDrawing);
+  }, [
+    startDrawing,
+    stopDrawing,
+    clearDrawing,
+    setStartDrawingCallback,
+    setStopDrawingCallback,
+    setClearDrawingCallback,
+  ]);
+
+  useEffect(() => {
     if (!mapRef.current || !polylinePath) return;
 
     const updatePolylineMarkers = () => {
@@ -227,16 +247,16 @@ export const usePolylineMap = () => {
 
     const distance = calculateTotalDistance(polylinePath);
     setTotalDistance(distance);
-  }, [polylinePath]);
+    setHasDrawing(polylinePath.length > 0);
+  }, [polylinePath, setHasDrawing, setTotalDistance]);
 
   return {
-    isDrawingMode,
+    isDrawing,
     mapRef,
     polylinePath,
-    totalDistance,
     tooltipContent,
     tooltipPosition,
-    setIsDrawingMode,
+    setIsDrawing,
     setTotalDistance,
     handleMapLoad,
     handleMapClick,
