@@ -1,4 +1,5 @@
 import { CSSProperties } from "react";
+import { Libraries } from "@react-google-maps/api";
 
 interface GoogleMapProps {
   mapContainerStyle: CSSProperties;
@@ -6,6 +7,8 @@ interface GoogleMapProps {
   center: google.maps.LatLng | google.maps.LatLngLiteral;
   options?: google.maps.MapOptions;
 }
+
+export const libraries: Libraries = ["geometry", "drawing", "marker"];
 
 export const googleMapProps: GoogleMapProps = {
   mapContainerStyle: {

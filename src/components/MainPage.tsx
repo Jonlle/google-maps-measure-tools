@@ -1,15 +1,16 @@
 import React from "react";
-import { useMapMode } from "../hooks/useMapMode";
+import { useJsApiLoader } from "@react-google-maps/api";
 import PolylineMap from "./PolylineMap";
 import CircleMap from "./CircleMap";
-import { useJsApiLoader } from "@react-google-maps/api";
+import { useMapMode } from "../hooks/useMapMode";
+import { libraries } from "../utils/googleMapProps";
 
 const MainPage: React.FC = () => {
   const { mode, handleModeChange } = useMapMode();
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
-    libraries: ["geometry", "drawing", "marker"],
+    libraries,
   });
 
   if (loadError) {
