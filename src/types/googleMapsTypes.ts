@@ -1,0 +1,10 @@
+export type TCircle = google.maps.Circle;
+export type TLatLng = google.maps.LatLng;
+export type TLatLngLiteral = google.maps.LatLngLiteral;
+export type TMap = google.maps.Map;
+export type TMapMouseEvent = google.maps.MapMouseEvent;
+export type TMarker = google.maps.Marker;
+export type TMVCArray = google.maps.MVCArray<google.maps.LatLng>;
+export type TPolygon = google.maps.Polygon;
+export type TPolyline = google.maps.Polyline;
+export type TPolylineOptions = google.maps.PolylineOptions;

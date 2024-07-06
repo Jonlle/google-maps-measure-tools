@@ -6,7 +6,8 @@ import {
 import {
   calculatePolygonPerimeter,
   calculatePolygonArea,
-} from "../utils/polygonUtils";
+} from "../utils/polylineUtils";
+import { TCircle, TPolygon } from "../types/googleMapsTypes";
 
 type Mode = "area" | "radius" | null;
 
@@ -21,8 +22,8 @@ const useMapControls = ({
 }: UseMapControlsProps) => {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [drawMode, setDrawMode] = useState<boolean>(false);
-  const [circle, setCircle] = useState<google.maps.Circle | null>(null);
-  const [polygon, setPolygon] = useState<google.maps.Polygon | null>(null);
+  const [circle, setCircle] = useState<TCircle | null>(null);
+  const [polygon, setPolygon] = useState<TPolygon | null>(null);
   const [radiusSelected, setRadiusSelected] = useState<number>(
     initialRadiusSelected,
   );
@@ -100,7 +101,7 @@ const useMapControls = ({
   }, [polygon]);
 
   const handleCircleComplete = useCallback(
-    (newCircle: google.maps.Circle | null) => {
+    (newCircle: TCircle | null) => {
       setCircle(newCircle);
       setDrawMode(false);
     },
@@ -108,7 +109,7 @@ const useMapControls = ({
   );
 
   const handlePolygonComplete = useCallback(
-    (newPolygon: google.maps.Polygon | null) => {
+    (newPolygon: TPolygon | null) => {
       setPolygon(newPolygon);
       setDrawMode(false);
     },
