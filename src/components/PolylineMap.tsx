@@ -4,11 +4,18 @@ import Result from "./Result";
 
 type CallbackFunction = () => void;
 
+export interface PolylineState {
+  totalDistance: number | null;
+  area: number | null;
+}
+
 const PolylineMap: React.FC = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasDrawing, setHasDrawing] = useState(false);
-  const [totalDistance, setTotalDistance] = useState(0);
-  const [area, setArea] = useState<number>(0);
+  const [polylineState, setPolylineState] = useState<PolylineState>({
+    totalDistance: null,
+    area: null,
+  });
   const [startDrawingCallback, setStartDrawingCallback] =
     useState<CallbackFunction | null>(null);
   const [stopDrawingCallback, setStopDrawingCallback] =
@@ -63,13 +70,12 @@ const PolylineMap: React.FC = () => {
         isDrawing={isDrawing}
         setIsDrawing={setIsDrawing}
         setHasDrawing={setHasDrawing}
-        setTotalDistance={setTotalDistance}
-        setArea={setArea}
+        setPolylineState={setPolylineState}
         setStartDrawingCallback={setStartDrawingCallback}
         setStopDrawingCallback={setStopDrawingCallback}
         setClearDrawingCallback={setClearDrawingCallback}
       />
-      <Result area={area} totalDistance={totalDistance} />
+      <Result polylineState={polylineState} />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import CustomTooltip from "./CustomTooltip";
 import { googleMapProps } from "../utils/googleMapProps";
 import { polygonOptions } from "../utils/polylineUtils";
 import { usePolylineMap } from "../hooks/usePolylineMap";
+import { PolylineState } from "./PolylineMap";
 
 type CallbackFunction = () => void;
 
@@ -11,8 +12,7 @@ export interface InteractivePolylineMapProps {
   isDrawing: boolean;
   setIsDrawing: React.Dispatch<React.SetStateAction<boolean>>;
   setHasDrawing: React.Dispatch<React.SetStateAction<boolean>>;
-  setTotalDistance: React.Dispatch<React.SetStateAction<number>>;
-  setArea: React.Dispatch<React.SetStateAction<number>>;
+  setPolylineState: React.Dispatch<React.SetStateAction<PolylineState>>;
   setStartDrawingCallback: React.Dispatch<
     React.SetStateAction<CallbackFunction | null>
   >;
@@ -28,8 +28,7 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
   isDrawing,
   setIsDrawing,
   setHasDrawing,
-  setTotalDistance,
-  setArea,
+  setPolylineState,
   setStartDrawingCallback,
   setStopDrawingCallback,
   setClearDrawingCallback,
@@ -51,8 +50,7 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
     isDrawing,
     setIsDrawing,
     setHasDrawing,
-    setTotalDistance,
-    setArea,
+    setPolylineState,
     setStartDrawingCallback,
     setStopDrawingCallback,
     setClearDrawingCallback,

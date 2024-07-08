@@ -21,8 +21,7 @@ export const usePolylineMap = ({
   isDrawing,
   setIsDrawing,
   setHasDrawing,
-  setTotalDistance,
-  setArea,
+  setPolylineState,
   setStartDrawingCallback,
   setStopDrawingCallback,
   setClearDrawingCallback,
@@ -80,8 +79,8 @@ export const usePolylineMap = ({
 
   const clearDrawing = useCallback(() => {
     setPolylinePath([]);
-    setTotalDistance(0);
-  }, [setTotalDistance]);
+    setPolylineState({ totalDistance: null, area: null });
+  }, [setPolylineState]);
 
   const handlePolylineClick = useCallback(
     (event: TMapMouseEvent) => {
@@ -245,14 +244,16 @@ export const usePolylineMap = ({
 
     updatePolylineMarkers();
 
-    const distance = calculateTotalDistance(polylinePath);
-    setTotalDistance(distance);
+    const totalDistance = calculateTotalDistance(polylinePath);
+    const area = calculatePolygonArea(polylinePath);
 
-    const polygonArea = calculatePolygonArea(polylinePath);
-    setArea(polygonArea);
+    setPolylineState({
+      totalDistance,
+      area,
+    });
 
     setHasDrawing(polylinePath.length > 0);
-  }, [polylinePath, setArea, setHasDrawing, setTotalDistance]);
+  }, [polylinePath, setHasDrawing, setPolylineState]);
 
   return {
     isDrawing,
@@ -261,7 +262,6 @@ export const usePolylineMap = ({
     tooltipContent,
     tooltipPosition,
     setIsDrawing,
-    setTotalDistance,
     handleMapLoad,
     handleMapClick,
     handlePolylineLoad,
