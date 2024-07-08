@@ -1,24 +1,58 @@
+import React, { useState, useCallback } from "react";
 import Result from "./Result";
 import { radiusOptions, RadiusOption } from "../utils/circleUtils";
 import InteractiveCircleMap from "./InteractiveCircleMap";
-import useCircleMap from "../hooks/useCircleMap";
 
-const CircleMap = () => {
-  const {
-    drawMode,
-    circle,
-    radiusSelected,
-    radius,
-    area,
-    perimeter,
-    waitingForCenter,
-    handleSelectRadiusChange,
-    handleDrawClick,
-    handleCancelDrawClick,
-    handleClearCircleClick,
-    handleCircleComplete,
-    handleCircleEdit,
-  } = useCircleMap({ initialRadiusSelected: 0 });
+export type CallbackFunction = () => void;
+
+export interface CircleState {
+  radius: number | null;
+  area: number | null;
+  perimeter: number | null;
+}
+
+const CircleMap: React.FC = () => {
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [hasDrawing, setHasDrawing] = useState(false);
+  const [radiusSelected, setRadiusSelected] = useState<number>(0);
+  const [circleState, setCircleState] = useState<CircleState>({
+    radius: null,
+    area: null,
+    perimeter: null,
+  });
+
+  const [selectRadiusCallback, setSelectRadiusCallback] =
+    useState<CallbackFunction | null>(null);
+  const [drawCircleCallback, setDrawCircleCallback] =
+    useState<CallbackFunction | null>(null);
+  const [cancelDrawCallback, setCancelDrawCallback] =
+    useState<CallbackFunction | null>(null);
+  const [clearCircleCallback, setClearCircleCallback] =
+    useState<CallbackFunction | null>(null);
+
+  const handleSelectRadiusChange = useCallback(() => {
+    if (selectRadiusCallback) {
+      selectRadiusCallback();
+    }
+  }, [selectRadiusCallback]);
+
+  const onDrawCircle = useCallback(() => {
+    if (drawCircleCallback) {
+      drawCircleCallback();
+    }
+  }, [drawCircleCallback]);
+
+  const onCancelDraw = useCallback(() => {
+    if (cancelDrawCallback) {
+      cancelDrawCallback();
+    }
+  }, [cancelDrawCallback]);
+
+  const onClearCircle = useCallback(() => {
+    if (clearCircleCallback) {
+      clearCircleCallback();
+    }
+  }, [clearCircleCallback]);
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -28,7 +62,7 @@ const CircleMap = () => {
             className="select__field"
             value={radiusSelected}
             onChange={handleSelectRadiusChange}
-            disabled={drawMode || !!circle}
+            disabled={hasDrawing && !isDrawing}
           >
             <option value="0" className="select__option" disabled>
               Selecciona un radio
@@ -41,38 +75,41 @@ const CircleMap = () => {
           </select>
         </div>
         <button
-          className={`button button--secondary`}
-          onClick={handleDrawClick}
-          disabled={drawMode || !!circle || waitingForCenter}
+          className="button button--secondary"
+          onClick={onDrawCircle}
+          disabled={isDrawing}
         >
           Dibujar un círculo
         </button>
-        {drawMode && (
-          <button
-            className="button button--secondary"
-            onClick={handleCancelDrawClick}
-          >
-            Cancelar dibujo
-          </button>
-        )}
-        {circle && (
-          <button
-            className="button button--secondary"
-            onClick={handleClearCircleClick}
-          >
-            Limpiar círculo
-          </button>
-        )}
+        <button
+          className="button button--secondary"
+          disabled={isDrawing}
+          onClick={onCancelDraw}
+        >
+          Cancelar
+        </button>
+        <button
+          className="button button--secondary"
+          disabled={!hasDrawing}
+          onClick={onClearCircle}
+        >
+          Limpiar
+        </button>
       </div>
 
       <InteractiveCircleMap
-        drawMode={drawMode}
+        isDrawing={isDrawing}
+        setIsDrawing={setIsDrawing}
+        setHasDrawing={setHasDrawing}
         radiusSelected={radiusSelected}
-        waitingForCenter={waitingForCenter}
-        onCircleComplete={handleCircleComplete}
-        onCircleEdit={handleCircleEdit}
+        setRadiusSelected={setRadiusSelected}
+        setCircleState={setCircleState}
+        setSelectRadiusCallback={setSelectRadiusCallback}
+        setDrawCircleCallback={setDrawCircleCallback}
+        setCancelDrawCallback={setCancelDrawCallback}
+        setClearCircleCallback={setClearCircleCallback}
       />
-      <Result area={area} perimeter={perimeter} radius={radius} />
+      <Result circleState={circleState} />
     </div>
   );
 };
