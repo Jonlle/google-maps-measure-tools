@@ -18,13 +18,8 @@ const MIN_CLICK_DISTANCE = 10;
 const MIN_HOVER_DISTANCE = 8;
 
 export const usePolylineMap = ({
-  isDrawing,
-  setIsDrawing,
-  setHasDrawing,
   setPolylineState,
-  setStartDrawingCallback,
-  setStopDrawingCallback,
-  setClearDrawingCallback,
+  useMapDrawing,
 }: InteractivePolylineMapProps) => {
   const [polylinePath, setPolylinePath] = useState<TLatLng[]>([]);
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -35,6 +30,11 @@ export const usePolylineMap = ({
     x: number;
     y: number;
   }>({ x: 0, y: 0 });
+
+  const { drawingState, setIsDrawing, setHasDrawing, setCallbacks } =
+    useMapDrawing;
+
+  const { isDrawing } = drawingState;
 
   const mapRef = useRef<TMap | null>(null);
   const polylineRef = useRef<TPolyline | null>(null);
@@ -79,7 +79,10 @@ export const usePolylineMap = ({
 
   const clearDrawing = useCallback(() => {
     setPolylinePath([]);
-    setPolylineState({ totalDistance: null, area: null });
+    setPolylineState({
+      totalDistance: null,
+      area: null,
+    });
   }, [setPolylineState]);
 
   const handlePolylineClick = useCallback(
@@ -218,17 +221,12 @@ export const usePolylineMap = ({
   );
 
   useEffect(() => {
-    setStartDrawingCallback(() => startDrawing);
-    setStopDrawingCallback(() => stopDrawing);
-    setClearDrawingCallback(() => clearDrawing);
-  }, [
-    startDrawing,
-    stopDrawing,
-    clearDrawing,
-    setStartDrawingCallback,
-    setStopDrawingCallback,
-    setClearDrawingCallback,
-  ]);
+    setCallbacks({
+      startDrawingCallback: startDrawing,
+      stopDrawingCallback: stopDrawing,
+      clearDrawingCallback: clearDrawing,
+    });
+  }, [clearDrawing, setCallbacks, startDrawing, stopDrawing]);
 
   useEffect(() => {
     if (!mapRef.current || !polylinePath) return;

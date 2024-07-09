@@ -1,39 +1,23 @@
 import React from "react";
 import { GoogleMap, Polyline } from "@react-google-maps/api";
 import CustomTooltip from "./CustomTooltip";
+import { PolylineState } from "./PolylineMap";
 import { googleMapProps } from "../utils/googleMapProps";
 import { polygonOptions } from "../utils/polylineUtils";
 import { usePolylineMap } from "../hooks/usePolylineMap";
-import { PolylineState } from "./PolylineMap";
-
-type CallbackFunction = () => void;
+import { UseMapDrawing } from "../hooks/useMapDrawing";
 
 export interface InteractivePolylineMapProps {
-  isDrawing: boolean;
-  setIsDrawing: React.Dispatch<React.SetStateAction<boolean>>;
-  setHasDrawing: React.Dispatch<React.SetStateAction<boolean>>;
   setPolylineState: React.Dispatch<React.SetStateAction<PolylineState>>;
-  setStartDrawingCallback: React.Dispatch<
-    React.SetStateAction<CallbackFunction | null>
-  >;
-  setStopDrawingCallback: React.Dispatch<
-    React.SetStateAction<CallbackFunction | null>
-  >;
-  setClearDrawingCallback: React.Dispatch<
-    React.SetStateAction<CallbackFunction | null>
-  >;
+  useMapDrawing: UseMapDrawing;
 }
 
 const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
-  isDrawing,
-  setIsDrawing,
-  setHasDrawing,
   setPolylineState,
-  setStartDrawingCallback,
-  setStopDrawingCallback,
-  setClearDrawingCallback,
+  useMapDrawing,
 }) => {
   const {
+    isDrawing,
     mapRef,
     polylinePath,
     tooltipContent,
@@ -47,14 +31,10 @@ const InteractivePolylineMap: React.FC<InteractivePolylineMapProps> = ({
     handlePolylineMouseDown,
     handlePolylineMouseUp,
   } = usePolylineMap({
-    isDrawing,
-    setIsDrawing,
-    setHasDrawing,
     setPolylineState,
-    setStartDrawingCallback,
-    setStopDrawingCallback,
-    setClearDrawingCallback,
+    useMapDrawing,
   });
+
   return (
     <>
       <GoogleMap

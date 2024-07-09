@@ -1,8 +1,7 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import InteractivePolylineMap from "./InteractivePolylineMap";
 import Result from "./Result";
-
-type CallbackFunction = () => void;
+import { useMapDrawing } from "../hooks/useMapDrawing";
 
 export interface PolylineState {
   totalDistance: number | null;
@@ -10,56 +9,32 @@ export interface PolylineState {
 }
 
 const PolylineMap: React.FC = () => {
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [hasDrawing, setHasDrawing] = useState(false);
   const [polylineState, setPolylineState] = useState<PolylineState>({
     totalDistance: null,
     area: null,
   });
-  const [startDrawingCallback, setStartDrawingCallback] =
-    useState<CallbackFunction | null>(null);
-  const [stopDrawingCallback, setStopDrawingCallback] =
-    useState<CallbackFunction | null>(null);
-  const [clearDrawingCallback, setClearDrawingCallback] =
-    useState<CallbackFunction | null>(null);
-
-  const onStartDrawing = useCallback(() => {
-    if (startDrawingCallback) {
-      startDrawingCallback();
-    }
-  }, [startDrawingCallback]);
-
-  const onStopDrawing = useCallback(() => {
-    if (stopDrawingCallback) {
-      stopDrawingCallback();
-    }
-  }, [stopDrawingCallback]);
-
-  const onClearDrawing = useCallback(() => {
-    if (clearDrawingCallback) {
-      clearDrawingCallback();
-    }
-  }, [clearDrawingCallback]);
+  const mapDrawing = useMapDrawing();
+  const { isDrawing, hasDrawing } = mapDrawing.drawingState;
 
   return (
     <div className="mx-auto max-w-7xl">
       <div className="mb-4 flex justify-start space-x-2">
         <button
-          onClick={onStartDrawing}
+          onClick={mapDrawing.handleStartDrawing}
           disabled={isDrawing}
           className="button button--secondary"
         >
           Dibujar
         </button>
         <button
-          onClick={onStopDrawing}
+          onClick={mapDrawing.handleStopDrawing}
           disabled={!isDrawing}
           className="button button--secondary"
         >
           Cancelar
         </button>
         <button
-          onClick={onClearDrawing}
+          onClick={mapDrawing.handleClearDrawing}
           disabled={!hasDrawing}
           className="button button--secondary"
         >
@@ -67,13 +42,8 @@ const PolylineMap: React.FC = () => {
         </button>
       </div>
       <InteractivePolylineMap
-        isDrawing={isDrawing}
-        setIsDrawing={setIsDrawing}
-        setHasDrawing={setHasDrawing}
         setPolylineState={setPolylineState}
-        setStartDrawingCallback={setStartDrawingCallback}
-        setStopDrawingCallback={setStopDrawingCallback}
-        setClearDrawingCallback={setClearDrawingCallback}
+        useMapDrawing={mapDrawing}
       />
       <Result polylineState={polylineState} />
     </div>
