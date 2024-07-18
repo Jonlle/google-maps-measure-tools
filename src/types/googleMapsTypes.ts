@@ -1,4 +1,5 @@
 export type TCircle = google.maps.Circle;
+export type TDrawingManager = google.maps.drawing.DrawingManager;
 export type TLatLng = google.maps.LatLng;
 export type TLatLngLiteral = google.maps.LatLngLiteral;
 export type TMap = google.maps.Map;

@@ -1,30 +1,29 @@
 import { useEffect } from "react";
+import { TLatLng } from "../types/googleMapsTypes";
 
 const useMapFitBounds = (
   map: google.maps.Map | null,
-  circle: google.maps.Circle | null,
+  center: TLatLng | null | undefined,
+  radius: number | null | undefined,
 ) => {
   useEffect(() => {
-    if (map && circle) {
-      const circleCenter = circle.getCenter()!;
-      const circleRadius = circle.getRadius();
-
+    if (map && center && radius) {
       const bounds = new google.maps.LatLngBounds();
       const start = google.maps.geometry.spherical.computeOffset(
-        circleCenter,
-        circleRadius * 1.1,
+        center,
+        radius * 1.1,
         225,
       );
       const end = google.maps.geometry.spherical.computeOffset(
-        circleCenter,
-        circleRadius * 1.1,
+        center,
+        radius * 1.1,
         45,
       );
       bounds.extend(start);
       bounds.extend(end);
       map.fitBounds(bounds);
     }
-  }, [map, circle]);
+  }, [map, center, radius]);
 };
 
 export default useMapFitBounds;

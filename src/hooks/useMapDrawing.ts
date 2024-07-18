@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-type CallbackFunction = () => void;
+export type CallbackFunction = () => void;
 
 export interface MapDrawingState {
   isDrawing: boolean;
