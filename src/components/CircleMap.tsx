@@ -31,7 +31,7 @@ const CircleMap: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-7xl">
-      <div className="mb-4 flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
+      <div className="mb-4 flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
         <div className="select w-full sm:w-auto">
           <select
             className="select__field w-full sm:w-auto"
