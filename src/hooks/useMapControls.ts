@@ -100,21 +100,15 @@ const useMapControls = ({
     }
   }, [polygon]);
 
-  const handleCircleComplete = useCallback(
-    (newCircle: TCircle | null) => {
-      setCircle(newCircle);
-      setDrawMode(false);
-    },
-    [],
-  );
+  const handleCircleComplete = useCallback((newCircle: TCircle | null) => {
+    setCircle(newCircle);
+    setDrawMode(false);
+  }, []);
 
-  const handlePolygonComplete = useCallback(
-    (newPolygon: TPolygon | null) => {
-      setPolygon(newPolygon);
-      setDrawMode(false);
-    },
-    [],
-  );
+  const handlePolygonComplete = useCallback((newPolygon: TPolygon | null) => {
+    setPolygon(newPolygon);
+    setDrawMode(false);
+  }, []);
 
   useEffect(() => {
     if (circle) {
@@ -124,21 +118,30 @@ const useMapControls = ({
       setPerimeter(calculateCirclePerimeter(circleRadius));
     } else if (polygon) {
       const paths = polygon.getPaths();
-      let totalPoints = 0;
-      paths.forEach((path) => (totalPoints += path.getLength()));
-      if (totalPoints > 2) {
-        setArea(calculatePolygonArea(paths));
-        setPerimeter(calculatePolygonPerimeter(paths));
-      } else if (totalPoints === 2) {
-        const path = paths.getAt(0);
-        const point1 = path.getAt(0);
-        const point2 = path.getAt(1);
-        const distance = google.maps.geometry.spherical.computeDistanceBetween(
-          point1,
-          point2
-        );
-        setPerimeter(distance);
-        setArea(null);
+      const totalPaths = paths.getLength();
+
+      if (totalPaths > 0) {
+        let totalPoints = 0;
+        paths.forEach((path) => (totalPoints += path.getLength()));
+
+        if (totalPoints > 2) {
+          setArea(calculatePolygonArea(paths));
+          setPerimeter(calculatePolygonPerimeter(paths));
+        } else if (totalPoints === 2) {
+          const path = paths.getAt(0);
+          const point1 = path.getAt(0);
+          const point2 = path.getAt(1);
+          const distance =
+            google.maps.geometry.spherical.computeDistanceBetween(
+              point1,
+              point2,
+            );
+          setPerimeter(distance);
+          setArea(null);
+        } else {
+          setArea(null);
+          setPerimeter(null);
+        }
       } else {
         setArea(null);
         setPerimeter(null);

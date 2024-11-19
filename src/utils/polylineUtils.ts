@@ -3,7 +3,6 @@ import {
   TLatLngLiteral,
   TMap,
   TMarker,
-  TMVCArray,
   TPolylineOptions,
 } from "../types/googleMapsTypes";
 
@@ -18,36 +17,47 @@ function convertLatLngToLatLngLiteral(latLang: TLatLng): TLatLngLiteral {
 }
 
 const getPolygonPointsFromPaths = (
-  paths: google.maps.MVCArray<TMVCArray>,
+  paths: google.maps.MVCArray<google.maps.MVCArray<google.maps.LatLng>>,
 ): google.maps.LatLng[] => {
   const polygonPoints: google.maps.LatLng[] = [];
   paths.forEach((path) => {
-    path.forEach((latLng) => {
+    const pathArray = path.getArray();
+    pathArray.forEach((latLng) => {
       polygonPoints.push(latLng);
     });
   });
   return polygonPoints;
 };
 
-export const calculatePolygonArea = (path: TLatLng[]): number => {
+export const calculatePolygonArea = (
+  paths:
+    | google.maps.MVCArray<google.maps.MVCArray<google.maps.LatLng>>
+    | google.maps.LatLng[],
+): number => {
+  const polygonPoints = Array.isArray(paths)
+    ? paths
+    : getPolygonPointsFromPaths(paths);
+
   if (
-    path.length < 3 ||
-    path[0].lat() !== path[path.length - 1].lat() ||
-    path[0].lng() !== path[path.length - 1].lng()
+    polygonPoints.length < 3 ||
+    polygonPoints[0].lat() !== polygonPoints[polygonPoints.length - 1].lat() ||
+    polygonPoints[0].lng() !== polygonPoints[polygonPoints.length - 1].lng()
   ) {
     return 0;
   }
 
-  const polygonPath = path.map(
-    (latLng) => new google.maps.LatLng(latLng.lat(), latLng.lng()),
-  );
-  return google.maps.geometry.spherical.computeArea(polygonPath);
+  const area = google.maps.geometry.spherical.computeArea(polygonPoints);
+  return area;
 };
 
 export const calculatePolygonPerimeter = (
-  paths: google.maps.MVCArray<TMVCArray>,
+  paths:
+    | google.maps.MVCArray<google.maps.MVCArray<google.maps.LatLng>>
+    | google.maps.LatLng[],
 ): number => {
-  const polygonPoints = getPolygonPointsFromPaths(paths);
+  const polygonPoints = Array.isArray(paths)
+    ? paths
+    : getPolygonPointsFromPaths(paths);
   const perimeter =
     google.maps.geometry.spherical.computeLength(polygonPoints) +
     google.maps.geometry.spherical.computeDistanceBetween(
