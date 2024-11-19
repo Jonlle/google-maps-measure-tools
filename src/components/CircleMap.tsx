@@ -31,10 +31,10 @@ const CircleMap: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-7xl">
-      <div className="mb-4 flex justify-start space-x-2">
-        <div className="select">
+      <div className="mb-4 flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+        <div className="select w-full sm:w-auto">
           <select
-            className="select__field"
+            className="select__field w-full sm:w-auto"
             value={radiusSelected}
             onChange={handleSelectRadiusChange}
             disabled={hasDrawing && !isDrawing}
@@ -50,21 +50,21 @@ const CircleMap: React.FC = () => {
           </select>
         </div>
         <button
-          className="button button--secondary"
+          className="button button--secondary w-full sm:w-auto"
           onClick={mapDrawing.handleStartDrawing}
           disabled={isDrawing}
         >
           {circleState.radius ? "Editar" : "Dibujar"}
         </button>
         <button
-          className="button button--secondary"
+          className="button button--secondary w-full sm:w-auto"
           onClick={mapDrawing.handleStopDrawing}
           disabled={!isDrawing}
         >
           Cancelar
         </button>
         <button
-          className="button button--secondary"
+          className="button button--secondary w-full sm:w-auto"
           onClick={mapDrawing.handleClearDrawing}
           disabled={!hasDrawing}
         >
