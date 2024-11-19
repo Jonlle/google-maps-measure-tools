@@ -77,7 +77,7 @@ Follow these steps to set up the project locally:
    - Enable the "Maps JavaScript API."
    - Generate an API key and add it to a `.env` file in the root directory:
      ```
-     REACT_APP_GOOGLE_MAPS_API_KEY=your_api_key_here
+     VITE_GOOGLE_MAPS_API_KEY=your_api_key_here
      ```
 
 4. Start the development server:
